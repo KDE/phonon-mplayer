@@ -19,6 +19,7 @@
 #include "audiooutput.h"
 
 #include "backend.h"
+#include "vlcloader.h"
 
 namespace Phonon
 {
@@ -33,10 +34,11 @@ AudioOutput::~AudioOutput() {
 }
 
 qreal AudioOutput::volume() const {
-	return 0.0;
+	return VLCLoader::get().libvlc_audio_get_volume() / 100;
 }
 
 void AudioOutput::setVolume(qreal volume) {
+	VLCLoader::get().libvlc_audio_set_volume(volume * 100);
 }
 
 int AudioOutput::outputDevice() const {

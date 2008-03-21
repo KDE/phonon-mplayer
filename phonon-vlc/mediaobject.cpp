@@ -18,8 +18,9 @@
 
 #include "mediaobject.h"
 
-#include "vlcloader.h"
-#include "vlcevents.h"
+#include "vlcmediaobject.h"
+
+#include <QtCore/QUrl>
 
 namespace Phonon
 {
@@ -29,7 +30,8 @@ namespace VLC
 MediaObject::MediaObject(QObject * parent)
 	: QObject(parent) {
 
-	_mediaInstance = NULL;
+	_currentState = Phonon::LoadingState;
+	_vlcMediaObject = NULL;
 }
 
 MediaObject::~MediaObject() {
@@ -39,96 +41,127 @@ void MediaObject::play() {
 	qDebug() << "MediaObject::play()";
 
 	switch (_mediaSource.type()) {
+
 	case MediaSource::Invalid:
 		break;
-	case MediaSource::LocalFile: {
-		//Create a new item
-		libvlc_media_descriptor_t * md = VLCLoader::get()->libvlc_media_descriptor_new(_mediaSource.fileName());
 
-		//Create a media instance playing environement
-		_mediaInstance = VLCLoader::get()->libvlc_media_instance_new_from_media_descriptor(md);
-
-
-		VLCMediaObject * vlcMediaObject = new VLCMediaObject(_mediaInstance, this);
-
-		connect(vlcMediaObject, SIGNAL(timeChanged(qint64)),
-			SIGNAL(tick(qint64)));
-
-
-		//Hook into a window
-		VLCLoader::get()->libvlc_media_instance_set_drawable(_mediaInstance, VLCLoader::get()->getDrawableWidget());
-
-		//No need to keep the media descriptor now
-		VLCLoader::get()->libvlc_media_descriptor_release(md);
-
-		//Play the media_instance
-		VLCLoader::get()->libvlc_media_instance_play(_mediaInstance);
-
+	case MediaSource::LocalFile:
+		playInternal(_mediaSource.fileName());
 		break;
-	}
+
 	case MediaSource::Url:
+		playInternal(_mediaSource.url().toString());
 		break;
+
 	case MediaSource::Disc: {
 		switch (_mediaSource.discType()) {
 		case Phonon::NoDisc:
 			//kFatal(610) << "I should never get to see a MediaSource that is a disc but doesn't specify which one";
 			return;
 		case Phonon::Cd:
+			playInternal(_mediaSource.deviceName());
 			break;
 		case Phonon::Dvd:
+			playInternal(_mediaSource.deviceName());
 			break;
 		case Phonon::Vcd:
+			playInternal(_mediaSource.deviceName());
 			break;
 		default:
 			return;
 		}
 		break;
 	}
+
 	case MediaSource::Stream:
 		break;
 	}
 }
 
+void MediaObject::playInternal(const QString & filename) {
+	if (_currentState == Phonon::PlayingState || _currentState == Phonon::PausedState) {
+		resume();
+	}
+
+	else {
+		//Delete previous _vlcMediaObject
+		delete _vlcMediaObject;
+
+		_vlcMediaObject = new VLCMediaObject(filename, this);
+
+		connect(_vlcMediaObject, SIGNAL(tick(qint64)),
+			SIGNAL(tick(qint64)));
+		connect(_vlcMediaObject, SIGNAL(stateChanged(Phonon::State)),
+			SLOT(stateChangedInternal(Phonon::State)));
+		connect(_vlcMediaObject, SIGNAL(totalTimeChanged(qint64)),
+			SIGNAL(totalTimeChanged(qint64)));
+
+		//Play the media_instance
+		_vlcMediaObject->play();
+	}
+}
+
+void MediaObject::resume() {
+	pause();
+}
+
 void MediaObject::pause() {
-	VLCLoader::get()->libvlc_media_instance_pause(_mediaInstance);
+	_vlcMediaObject->pause();
 }
 
 void MediaObject::stop() {
-	VLCLoader::get()->libvlc_media_instance_stop(_mediaInstance);
-
-	//Free the media_instance
-	VLCLoader::get()->libvlc_media_instance_release(_mediaInstance);
-	_mediaInstance = NULL;
+	_vlcMediaObject->stop();
 }
 
 void MediaObject::seek(qint64 milliseconds) {
+	_vlcMediaObject->seek(milliseconds);
 }
 
 qint32 MediaObject::tickInterval() const {
-	return 0;
+	return 1000;
 }
 
 void MediaObject::setTickInterval(qint32 interval) {
 }
 
 bool MediaObject::hasVideo() const {
-	return true;
+	if (_vlcMediaObject) {
+		return _vlcMediaObject->hasVideo();
+	} else {
+		return false;
+	}
 }
 
 bool MediaObject::isSeekable() const {
-	return true;
+	if (_vlcMediaObject) {
+		return _vlcMediaObject->isSeekable();
+	} else {
+		return false;
+	}
 }
 
 qint64 MediaObject::currentTime() const {
-	return VLCLoader::get()->libvlc_media_instance_get_time(_mediaInstance);
+	if (_vlcMediaObject) {
+		return _vlcMediaObject->currentTime();
+	} else {
+		return 0;
+	}
 }
 
 Phonon::State MediaObject::state() const {
-	return Phonon::StoppedState;
+	if (_vlcMediaObject) {
+		return _vlcMediaObject->state();
+	} else {
+		return _currentState;
+	}
 }
 
 QString MediaObject::errorString() const {
-	return "";
+	if (_vlcMediaObject) {
+		return _vlcMediaObject->errorString();
+	} else {
+		return "";
+	}
 }
 
 Phonon::ErrorType MediaObject::errorType() const {
@@ -136,7 +169,12 @@ Phonon::ErrorType MediaObject::errorType() const {
 }
 
 qint64 MediaObject::totalTime() const {
-	return 0;
+	if (_vlcMediaObject) {
+		return _vlcMediaObject->totalTime();
+	} else {
+		//No media
+		return 0;
+	}
 }
 
 MediaSource MediaObject::source() const {
@@ -198,6 +236,12 @@ bool MediaObject::hasInterface(Interface iface) const {
 
 QVariant MediaObject::interfaceCall(Interface iface, int command, const QList<QVariant> & arguments) {
 	return new QVariant();
+}
+
+void MediaObject::stateChangedInternal(Phonon::State newState) {
+	Phonon::State previousState = _currentState;
+	_currentState = newState;
+	emit stateChanged(_currentState, previousState);
 }
 
 }}	//Namespace Phonon::VLC

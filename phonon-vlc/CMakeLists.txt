@@ -12,7 +12,7 @@ set(phonon_vlc_SRCS
 	videowidget.cpp
 	audiooutput.cpp
 	vlcloader.cpp
-	vlcevents.cpp
+	vlcmediaobject.cpp
 )
 
 qt4_wrap_cpp(phonon_vlc_SRCS
@@ -21,7 +21,7 @@ qt4_wrap_cpp(phonon_vlc_SRCS
 	videowidget.h
 	audiooutput.h
 	vlcloader.h
-	vlcevents.h
+	vlcmediaobject.h
 )
 
 add_library(phonon_vlc MODULE ${phonon_vlc_SRCS})

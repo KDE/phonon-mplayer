@@ -24,8 +24,6 @@
 #include <QtCore/QObject>
 #include <QtCore/QString>
 
-#include "vlcevents.h"
-
 class QLibrary;
 
 namespace Phonon
@@ -41,65 +39,53 @@ namespace VLC
  */
 class VLCLoader : public QObject {
 	Q_OBJECT
-	friend class VLCMediaObject;
 public:
 
 	/**
 	 * Singleton.
-	 * FIXME Ugly hack to get VLCLoader accessible from everywhere.
+	 * Makes VLCLoader accessible from everywhere.
 	 *
 	 * Global variable.
 	 */
-	static VLCLoader * get();
+	static VLCLoader & get();
+	static QLibrary * getVLCLib();
+	static libvlc_exception_t * getVLCException();
 
 	bool load(const QString & libname);
 
 	void libvlc_new(int argc, const char * const * argv);
 	void libvlc_release();
-
 	void libvlc_exception_init();
 
-	libvlc_media_descriptor_t * libvlc_media_descriptor_new(const QString & mediaDescriptor);
+	libvlc_media_descriptor_t * libvlc_media_descriptor_new(const QString & filename);
 
-	libvlc_media_instance_t * libvlc_media_instance_new_from_media_descriptor(libvlc_media_descriptor_t * md);
+	//Audio
+	int libvlc_audio_get_volume();
+	void libvlc_audio_set_volume(int volume);
 
-	void libvlc_media_descriptor_release(libvlc_media_descriptor_t * md);
-
-	void libvlc_media_instance_play(libvlc_media_instance_t * mi);
-	void libvlc_media_instance_pause(libvlc_media_instance_t * mi);
-	void libvlc_media_instance_stop(libvlc_media_instance_t * mi);
-
+	//Widget
+	void libvlc_video_set_parent(libvlc_drawable_t drawable);
 	void setDrawableWidget(const QWidget * widget);
 	int getDrawableWidget() const;
 
-	/** FIXME does not work inside VLC!!! */
-	void libvlc_media_instance_set_drawable(libvlc_media_instance_t * mi, libvlc_drawable_t drawable);
-
-	void libvlc_video_set_parent(libvlc_drawable_t drawable);
-
-	libvlc_time_t libvlc_media_instance_get_time(libvlc_media_instance_t * mi);
-
-	void libvlc_media_instance_release(libvlc_media_instance_t * mi);
+	void checkException();
+	const char * libvlc_exception_get_message();
 
 private:
 
 	VLCLoader(QObject * parent);
 	~VLCLoader();
 
-	void checkException();
-
 	int libvlc_exception_raised();
 
 	/** Hack, global variable. */
 	static VLCLoader * _vlcLoader;
 
-	const char * libvlc_exception_get_message();
-
 	QLibrary * _vlc;
 
 	libvlc_instance_t * _instance;
 
-	libvlc_exception_t _exception;
+	libvlc_exception_t * _exception;
 
 	int _drawableWidget;
 };

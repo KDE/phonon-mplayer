@@ -47,6 +47,7 @@ public:
 private slots:
 
 	void addFiles();
+	void openDVD();
 	void about();
 	void aboutToFinish();
 

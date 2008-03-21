@@ -55,6 +55,7 @@ MainWindow::MainWindow() {
 	connect(actionStop, SIGNAL(triggered()), _mediaObject, SLOT(stop()));
 
 	connect(actionAddFiles, SIGNAL(triggered()), SLOT(addFiles()));
+	connect(actionOpenDVD, SIGNAL(triggered()), SLOT(openDVD()));
 	connect(actionExit, SIGNAL(triggered()), SLOT(close()));
 	connect(actionAbout, SIGNAL(triggered()), SLOT(about()));
 	connect(actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
@@ -121,6 +122,14 @@ void MainWindow::addFiles() {
 	///
 }
 
+void MainWindow::openDVD() {
+	///
+	Phonon::MediaSource * mediaSource = new Phonon::MediaSource(Phonon::Dvd, "D:");
+	_mediaObject->setCurrentSource(*mediaSource);
+	_mediaObject->play();
+	///
+}
+
 void MainWindow::about() {
 	QMessageBox::information(this, tr("About VideoPlayer"),
 			tr("The VideoPlayer example shows how to use Phonon."));
@@ -139,6 +148,8 @@ void MainWindow::stateChanged(Phonon::State newState, Phonon::State oldState) {
 		break;
 
 	case Phonon::PlayingState:
+		qDebug() << "PlayingState newState=" << newState << "oldState=" << oldState;
+
 		//_videoWidget->enterFullScreen();
 		actionPlay->setEnabled(false);
 		actionPause->setEnabled(true);
@@ -146,6 +157,8 @@ void MainWindow::stateChanged(Phonon::State newState, Phonon::State oldState) {
 		break;
 
 	case Phonon::StoppedState:
+		qDebug() << "StoppedState newState=" << newState << "oldState=" << oldState;
+
 		//_videoWidget->exitFullScreen();
 		actionStop->setEnabled(false);
 		actionPlay->setEnabled(true);
@@ -154,18 +167,25 @@ void MainWindow::stateChanged(Phonon::State newState, Phonon::State oldState) {
 		break;
 
 	case Phonon::PausedState:
+		qDebug() << "PausedState newState=" << newState << "oldState=" << oldState;
+
 		actionPause->setEnabled(false);
 		actionStop->setEnabled(true);
 		actionPlay->setEnabled(true);
 		break;
 
 	case Phonon::LoadingState:
+		qDebug() << "LoadingState newState=" << newState << "oldState=" << oldState;
+
 		break;
 
 	case Phonon::BufferingState:
+		qDebug() << "BufferingState newState=" << newState << "oldState=" << oldState;
+
 		break;
 
 	default:
+		qDebug() << "State? newState=" << newState << "oldState=" << oldState;
 		;
 	}
 }

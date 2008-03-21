@@ -38,6 +38,7 @@ VLCLoader * VLCLoader::_vlcLoader = NULL;
 VLCLoader::VLCLoader(QObject * parent) {
 	_vlc = new QLibrary(parent);
 	_instance = NULL;
+	_exception = new libvlc_exception_t;
 }
 
 VLCLoader::~VLCLoader() {
@@ -45,7 +46,7 @@ VLCLoader::~VLCLoader() {
 	delete _vlc;
 }
 
-VLCLoader * VLCLoader::get() {
+VLCLoader & VLCLoader::get() {
 	//Lazy initialization
 	if (!_vlcLoader) {
 		QDir vlcPath(QCoreApplication::applicationDirPath());
@@ -58,8 +59,6 @@ VLCLoader * VLCLoader::get() {
 		_vlcLoader = new VLCLoader(NULL);
 		_vlcLoader->load(vlcDll.fileName());
 
-		//HINSTANCE pHnd = LoadLibraryA((QDir::toNativeSeparators(QString("\"") + vlcDll.fileName() + QString("\""))).toAscii().data());
-
 		_vlcLoader->libvlc_exception_init();
 
 		char * vlcArgc[] = { vlcPath.path().toAscii().data(), "--plugin-path=", vlcPluginsPath.path().toAscii().data() };
@@ -68,7 +67,15 @@ VLCLoader * VLCLoader::get() {
 		_vlcLoader->libvlc_new(sizeof(vlcArgc) / sizeof(*vlcArgc), vlcArgc);
 	}
 
-	return _vlcLoader;
+	return *_vlcLoader;
+}
+
+QLibrary * VLCLoader::getVLCLib() {
+	return VLCLoader::get()._vlc;
+}
+
+libvlc_exception_t * VLCLoader::getVLCException() {
+	return VLCLoader::get()._exception;
 }
 
 void VLCLoader::checkException() {
@@ -93,7 +100,7 @@ void VLCLoader::libvlc_new(int argc, const char * const * argv) {
 	typedef libvlc_instance_t * (*fct) (int, const char * const *, libvlc_exception_t *);
 	fct function = (fct) _vlc->resolve("libvlc_new");
 	if (function) {
-		_instance = function(argc, argv, &_exception);
+		_instance = function(argc, argv, _exception);
 		checkException();
 	} else {
 	}
@@ -103,81 +110,29 @@ void VLCLoader::libvlc_exception_init() {
 	typedef void (*fct) (libvlc_exception_t *);
 	fct function = (fct) _vlc->resolve("libvlc_exception_init");
 	if (function) {
-		function(&_exception);
-	} else {
+		function(_exception);
 	}
+}
+
+libvlc_media_descriptor_t * VLCLoader::libvlc_media_descriptor_new(const QString & filename) {
+	typedef libvlc_media_descriptor_t * (*fct) (libvlc_instance_t *, const char *, libvlc_exception_t *);
+	fct function = (fct) _vlc->resolve("libvlc_media_descriptor_new");
+	libvlc_media_descriptor_t * md = NULL;
+	if (function) {
+		md = function(_instance, filename.toAscii(), _exception);
+		checkException();
+	}
+	return md;
 }
 
 const char * VLCLoader::libvlc_exception_get_message() {
 	typedef const char * (*fct) (const libvlc_exception_t *);
 	fct function = (fct) _vlc->resolve("libvlc_exception_get_message");
+	const char * msg = NULL;
 	if (function) {
-		return function(&_exception);
-	} else {
-		return NULL;
+		msg = function(_exception);
 	}
-}
-
-libvlc_media_descriptor_t * VLCLoader::libvlc_media_descriptor_new(const QString & mediaDescriptor) {
-	typedef libvlc_media_descriptor_t * (*fct) (libvlc_instance_t *, const char *, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_media_descriptor_new");
-	if (function) {
-		return function(_instance, mediaDescriptor.toAscii(), &_exception);
-	} else {
-		return NULL;
-	}
-}
-
-libvlc_media_instance_t * VLCLoader::libvlc_media_instance_new_from_media_descriptor(libvlc_media_descriptor_t * md) {
-	typedef libvlc_media_instance_t * (*fct) (libvlc_media_descriptor_t *, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_media_instance_new_from_media_descriptor");
-
-	libvlc_media_instance_t * mi = NULL;
-
-	if (function) {
-		mi = function(md, &_exception);
-		checkException();
-	} else {
-	}
-
-	return mi;
-}
-
-void VLCLoader::libvlc_media_descriptor_release(libvlc_media_descriptor_t * md) {
-	typedef void (*fct) (libvlc_media_descriptor_t *);
-	fct function = (fct) _vlc->resolve("libvlc_media_descriptor_release");
-	if (function) {
-		function(md);
-	} else {
-	}
-}
-
-void VLCLoader::libvlc_media_instance_play(libvlc_media_instance_t * mi) {
-	typedef void (*fct) (libvlc_media_instance_t *, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_media_instance_play");
-	if (function) {
-		function(mi, &_exception);
-	} else {
-	}
-}
-
-void VLCLoader::libvlc_media_instance_pause(libvlc_media_instance_t * mi) {
-	typedef void (*fct) (libvlc_media_instance_t *, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_media_instance_pause");
-	if (function) {
-		function(mi, &_exception);
-		checkException();
-	} else {
-	}
-}
-
-void VLCLoader::libvlc_media_instance_stop(libvlc_media_instance_t * mi) {
-	typedef void (*fct) (libvlc_media_instance_t *, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_media_instance_stop");
-	if (function) {
-		function(mi, &_exception);
-	} else {
-	}
+	return msg;
 }
 
 void VLCLoader::setDrawableWidget(const QWidget * widget) {
@@ -188,43 +143,12 @@ int VLCLoader::getDrawableWidget() const {
 	return _drawableWidget;
 }
 
-void VLCLoader::libvlc_media_instance_set_drawable(libvlc_media_instance_t * mi, libvlc_drawable_t drawable) {
-	typedef void (*fct) (libvlc_media_instance_t *, libvlc_drawable_t, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_media_instance_set_drawable");
-	if (function) {
-		function(mi, drawable, &_exception);
-		checkException();
-	} else {
-	}
-}
-
 void VLCLoader::libvlc_video_set_parent(libvlc_drawable_t drawable) {
 	typedef void (*fct) (libvlc_instance_t *, libvlc_drawable_t, libvlc_exception_t *);
 	fct function = (fct) _vlc->resolve("libvlc_video_set_parent");
 	if (function) {
-		function(_instance, drawable, &_exception);
+		function(_instance, drawable, _exception);
 		checkException();
-	} else {
-	}
-}
-
-libvlc_time_t VLCLoader::libvlc_media_instance_get_time(libvlc_media_instance_t * mi) {
-	typedef libvlc_time_t (*fct) (libvlc_media_instance_t *, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_media_instance_get_time");
-	if (function) {
-		libvlc_time_t t = function(mi, &_exception);
-		checkException();
-		return t;
-	} else {
-		return 0;
-	}
-}
-
-void VLCLoader::libvlc_media_instance_release(libvlc_media_instance_t * mi) {
-	typedef void (*fct) (libvlc_media_instance_t *);
-	fct function = (fct) _vlc->resolve("libvlc_media_instance_release");
-	if (function) {
-		function(mi);
 	} else {
 	}
 }
@@ -243,9 +167,30 @@ int VLCLoader::libvlc_exception_raised() {
 	typedef int (*fct) (const libvlc_exception_t *);
 	fct function = (fct) _vlc->resolve("libvlc_exception_raised");
 	if (function) {
-		return function(&_exception);
+		return function(_exception);
 	} else {
 		return 0;
+	}
+}
+
+int VLCLoader::libvlc_audio_get_volume() {
+	typedef int (*fct) (libvlc_instance_t *, libvlc_exception_t *);
+	fct function = (fct) _vlc->resolve("libvlc_audio_get_volume");
+	int vol = 0;
+	if (function) {
+		vol = function(_instance, _exception);
+		checkException();
+	}
+	return vol;
+}
+
+void VLCLoader::libvlc_audio_set_volume(int volume) {
+	typedef void (*fct) (libvlc_instance_t *, int, libvlc_exception_t *);
+	fct function = (fct) _vlc->resolve("libvlc_audio_set_volume");
+	if (function) {
+		function(_instance, volume, _exception);
+		checkException();
+	} else {
 	}
 }
 

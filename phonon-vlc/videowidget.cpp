@@ -32,8 +32,8 @@ VideoWidget::VideoWidget(QWidget * parent)
 
 	_widget = new QWidget(parent);
 
-	VLCLoader::get()->setDrawableWidget(_widget);
-	VLCLoader::get()->libvlc_video_set_parent(VLCLoader::get()->getDrawableWidget());
+	VLCLoader::get().setDrawableWidget(_widget);
+	VLCLoader::get().libvlc_video_set_parent(VLCLoader::get().getDrawableWidget());
 }
 
 VideoWidget::~VideoWidget() {

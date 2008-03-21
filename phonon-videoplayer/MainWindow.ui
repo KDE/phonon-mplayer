@@ -103,6 +103,7 @@
      <string>File</string>
     </property>
     <addaction name="actionAddFiles" />
+    <addaction name="actionOpenDVD" />
     <addaction name="separator" />
     <addaction name="actionExit" />
    </widget>
@@ -230,6 +231,11 @@
    </property>
    <property name="text" >
     <string>Fullscreen</string>
+   </property>
+  </action>
+  <action name="actionOpenDVD" >
+   <property name="text" >
+    <string>Open DVD</string>
    </property>
   </action>
  </widget>

@@ -24,13 +24,12 @@
 
 #include <QtCore/QObject>
 
-struct libvlc_media_instance_t;
-struct libvlc_event_t;
-
 namespace Phonon
 {
 namespace VLC
 {
+
+class VLCMediaObject;
 
 /**
  *
@@ -77,15 +76,33 @@ public:
 
 signals:
 
+	//void aboutToFinish()
+	//void bufferStatus(int percentFilled);
+	//void currentSourceChanged(const Phonon::MediaSource & newSource);
+	//void finished()
+	//void hasVideoChanged(bool hasVideo);
+	//void metaDataChanged()
+	//void prefinishMarkReached(qint32 msecToEnd);
+	//void seekableChanged(bool isSeekable);
 	void stateChanged(Phonon::State newState, Phonon::State oldState);
-
 	void tick(qint64 time);
+	void totalTimeChanged(qint64 newTotalTime);
+
+private slots:
+
+	void stateChangedInternal(Phonon::State newState);
 
 private:
 
+	void playInternal(const QString & filename);
+
+	void resume();
+
 	MediaSource _mediaSource;
 
-	libvlc_media_instance_t * _mediaInstance;
+	VLCMediaObject * _vlcMediaObject;
+
+	Phonon::State _currentState;
 };
 
 }}	//Namespace Phonon::VLC
