@@ -28,85 +28,86 @@ namespace Phonon
 namespace VLC
 {
 
-//Hack, global variable
-VLCEvents * VLCEvents::_vlcevents = NULL;
-
-VLCEvents::VLCEvents(QObject * parent)
+VLCMediaObject::VLCMediaObject(libvlc_media_instance_t * mediaInstance, QObject * parent)
 	: QObject(parent) {
 
+	_mediaInstance = mediaInstance;
 	_eventManager = NULL;
+
+	connectToAllVLCEvents();
 }
 
-VLCEvents::~VLCEvents() {
+VLCMediaObject::~VLCMediaObject() {
 }
 
-VLCEvents * VLCEvents::get() {
-	//Lazy initialization
-	if (!_vlcevents) {
-		_vlcevents = new VLCEvents(NULL);
-		
-		TODO
-mi = libvlc_media_instance_new (vlc, &ex);
-catch ();
+void VLCMediaObject::connectToAllVLCEvents() {
+	_eventManager = libvlc_media_instance_event_manager();
 
-em = libvlc_media_instance_event_manager (mi, &ex);
+	libvlc_event_type_t events[] = {
+		libvlc_MediaDescriptorMetaChanged,
+		libvlc_MediaDescriptorSubItemAdded,
+		libvlc_MediaDescriptorDurationChanged,
+		libvlc_MediaDescriptorPreparsedChanged,
+		libvlc_MediaDescriptorFreed,
+		libvlc_MediaDescriptorStateChanged,
 
-		libvlc_event_type_t events[] = {
-			libvlc_MediaDescriptorMetaChanged,
-			libvlc_MediaDescriptorSubItemAdded,
-			libvlc_MediaDescriptorDurationChanged,
-			libvlc_MediaDescriptorPreparsedChanged,
-			libvlc_MediaDescriptorFreed,
-			libvlc_MediaDescriptorStateChanged,
+		libvlc_MediaInstancePlayed,
+		libvlc_MediaInstancePaused,
+		libvlc_MediaInstanceReachedEnd,
+		libvlc_MediaInstanceEncounteredError,
+		libvlc_MediaInstanceTimeChanged,
+		libvlc_MediaInstancePositionChanged,
+		libvlc_MediaInstanceSeekableChanged,
+		libvlc_MediaInstancePausableChanged,
 
-			libvlc_MediaInstancePlayed,
-			libvlc_MediaInstancePaused,
-			libvlc_MediaInstanceReachedEnd,
-			libvlc_MediaInstanceEncounteredError,
-			libvlc_MediaInstanceTimeChanged,
-			libvlc_MediaInstancePositionChanged,
-			libvlc_MediaInstanceSeekableChanged,
-			libvlc_MediaInstancePausableChanged,
+		libvlc_MediaListItemAdded,
+		libvlc_MediaListWillAddItem,
+		libvlc_MediaListItemDeleted,
+		libvlc_MediaListWillDeleteItem,
 
-			libvlc_MediaListItemAdded,
-			libvlc_MediaListWillAddItem,
-			libvlc_MediaListItemDeleted,
-			libvlc_MediaListWillDeleteItem,
+		libvlc_MediaListViewItemAdded,
+		libvlc_MediaListViewWillAddItem,
+		libvlc_MediaListViewItemDeleted,
+		libvlc_MediaListViewWillDeleteItem,
 
-			libvlc_MediaListViewItemAdded,
-			libvlc_MediaListViewWillAddItem,
-			libvlc_MediaListViewItemDeleted,
-			libvlc_MediaListViewWillDeleteItem,
+		libvlc_MediaListPlayerPlayed,
+		libvlc_MediaListPlayerNextItemSet,
+		libvlc_MediaListPlayerStopped,
 
-			libvlc_MediaListPlayerPlayed,
-			libvlc_MediaListPlayerNextItemSet,
-			libvlc_MediaListPlayerStopped,
-
-			libvlc_MediaDiscovererStarted,
-			libvlc_MediaDiscovererEnded
-		};
-		int nbEvents = sizeof(events) / sizeof(*events);
-		for (int i = 0; i < nbEvents; i++) {
-			_vlcevents->libvlc_event_attach(events[i]);
-		}
+		libvlc_MediaDiscovererStarted,
+		libvlc_MediaDiscovererEnded
+	};
+	int nbEvents = sizeof(events) / sizeof(*events);
+	for (int i = 0; i < nbEvents; i++) {
+		libvlc_event_attach(events[i]);
 	}
-
-	return _vlcevents;
 }
 
-void VLCEvents::libvlc_callback(const libvlc_event_t * event, void * user_data) {
-	qDebug() << "VLC event received=" << _vlcevents->libvlc_event_type_name(event->type);
+libvlc_event_manager_t * VLCMediaObject::libvlc_media_instance_event_manager() {
+	typedef libvlc_event_manager_t * (*fct) (libvlc_media_instance_t *, libvlc_exception_t *);
+	fct function = (fct) VLCLoader::get()->_vlc->resolve("libvlc_media_instance_event_manager");
+	if (function) {
+		return function(_mediaInstance, &(VLCLoader::get()->_exception));
+	} else {
+		return NULL;
+	}
+}
+
+void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_data) {
+	VLCMediaObject * vlcMediaObject = (VLCMediaObject *) user_data;
+
+	qDebug() << "VLC event received=" << vlcMediaObject->libvlc_event_type_name(event->type);
 
 	if (event->type == libvlc_MediaInstanceTimeChanged) {
-		emit _vlcevents->timeChanged(event, user_data);
+		emit vlcMediaObject->timeChanged(/*event->event_type_specific->media_instance_time_changed->new_time*/100);
 	}
 
 	if (event->type == libvlc_MediaInstancePaused) {
-		emit _vlcevents->timeChanged(event, user_data);
+		//emit vlcMediaObject->paused();
 	}
 }
 
-void VLCEvents::libvlc_event_attach(libvlc_event_type_t event_type) {
+void VLCMediaObject::libvlc_event_attach(libvlc_event_type_t event_type) {
 	typedef void (*fct) (libvlc_event_manager_t *, libvlc_event_type_t, libvlc_callback_t, void *, libvlc_exception_t *);
 	fct function = (fct) VLCLoader::get()->_vlc->resolve("libvlc_event_attach");
 	if (function) {
@@ -116,7 +117,7 @@ void VLCEvents::libvlc_event_attach(libvlc_event_type_t event_type) {
 	}
 }
 
-void VLCEvents::libvlc_event_detach(libvlc_event_type_t event_type) {
+void VLCMediaObject::libvlc_event_detach(libvlc_event_type_t event_type) {
 	typedef void (*fct) (libvlc_event_manager_t *, libvlc_event_type_t, libvlc_callback_t, void *, libvlc_exception_t *);
 	fct function = (fct) VLCLoader::get()->_vlc->resolve("libvlc_event_detach");
 	if (function) {
@@ -126,7 +127,7 @@ void VLCEvents::libvlc_event_detach(libvlc_event_type_t event_type) {
 	}
 }
 
-const char * VLCEvents::libvlc_event_type_name(libvlc_event_type_t event_type) {
+const char * VLCMediaObject::libvlc_event_type_name(libvlc_event_type_t event_type) {
 	typedef const char * (*fct) (libvlc_event_type_t);
 	fct function = (fct) VLCLoader::get()->_vlc->resolve("libvlc_event_type_name");
 	if (function) {

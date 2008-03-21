@@ -39,8 +39,9 @@ namespace VLC
  * @see libvlc.h
  * @author Tanguy Krotoff
  */
-class VLCLoader {
-	friend class VLCEvents;
+class VLCLoader : public QObject {
+	Q_OBJECT
+	friend class VLCMediaObject;
 public:
 
 	/**
@@ -90,7 +91,7 @@ private:
 	int libvlc_exception_raised();
 
 	/** Hack, global variable. */
-	static VLCLoader * _vlcloader;
+	static VLCLoader * _vlcLoader;
 
 	const char * libvlc_exception_get_message();
 

@@ -33,7 +33,7 @@ namespace VLC
 {
 
 //Hack, global variable
-VLCLoader * VLCLoader::_vlcloader = NULL;
+VLCLoader * VLCLoader::_vlcLoader = NULL;
 
 VLCLoader::VLCLoader(QObject * parent) {
 	_vlc = new QLibrary(parent);
@@ -47,7 +47,7 @@ VLCLoader::~VLCLoader() {
 
 VLCLoader * VLCLoader::get() {
 	//Lazy initialization
-	if (!_vlcloader) {
+	if (!_vlcLoader) {
 		QDir vlcPath(QCoreApplication::applicationDirPath());
 		qDebug() << "VLC path=" << vlcPath.exists() << vlcPath.path();
 		QDir vlcPluginsPath(vlcPath.path() + "/plugins");
@@ -55,20 +55,20 @@ VLCLoader * VLCLoader::get() {
 
 		QFile vlcDll(vlcPath.path() + "/libvlc-control");
 		qDebug() << "VLC .dll path=" << vlcDll.exists() << vlcDll.fileName();
-		_vlcloader = new VLCLoader(NULL);
-		_vlcloader->load(vlcDll.fileName());
+		_vlcLoader = new VLCLoader(NULL);
+		_vlcLoader->load(vlcDll.fileName());
 
 		//HINSTANCE pHnd = LoadLibraryA((QDir::toNativeSeparators(QString("\"") + vlcDll.fileName() + QString("\""))).toAscii().data());
 
-		_vlcloader->libvlc_exception_init();
+		_vlcLoader->libvlc_exception_init();
 
 		char * vlcArgc[] = { vlcPath.path().toAscii().data(), "--plugin-path=", vlcPluginsPath.path().toAscii().data() };
 
 		//Init VLC modules, should be done only once
-		_vlcloader->libvlc_new(sizeof(vlcArgc) / sizeof(vlcArgc[0]), vlcArgc);
+		_vlcLoader->libvlc_new(sizeof(vlcArgc) / sizeof(*vlcArgc), vlcArgc);
 	}
 
-	return _vlcloader;
+	return _vlcLoader;
 }
 
 void VLCLoader::checkException() {
@@ -131,12 +131,16 @@ libvlc_media_descriptor_t * VLCLoader::libvlc_media_descriptor_new(const QString
 libvlc_media_instance_t * VLCLoader::libvlc_media_instance_new_from_media_descriptor(libvlc_media_descriptor_t * md) {
 	typedef libvlc_media_instance_t * (*fct) (libvlc_media_descriptor_t *, libvlc_exception_t *);
 	fct function = (fct) _vlc->resolve("libvlc_media_instance_new_from_media_descriptor");
+
+	libvlc_media_instance_t * mi = NULL;
+
 	if (function) {
-		return function(md, &_exception);
+		mi = function(md, &_exception);
 		checkException();
 	} else {
-		return NULL;
 	}
+
+	return mi;
 }
 
 void VLCLoader::libvlc_media_descriptor_release(libvlc_media_descriptor_t * md) {

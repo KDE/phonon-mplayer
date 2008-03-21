@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PHONON_VLC_VLCEVENTS_H
-#define PHONON_VLC_VLCEVENTS_H
+#ifndef PHONON_VLC_VLCMEDIAOBJECT_H
+#define PHONON_VLC_VLCMEDIAOBJECT_H
 
 #include <vlc/libvlc.h>
 
@@ -37,17 +37,22 @@ namespace VLC
  * @see libvlc.h
  * @author Tanguy Krotoff
  */
-class VLCEvents : public QObject {
+class VLCMediaObject : public QObject {
 	Q_OBJECT
 public:
 
-	/**
-	 * Singleton.
-	 * FIXME Ugly hack to get VLCEvents accessible from everywhere.
-	 *
-	 * Global variable.
-	 */
-	static VLCEvents * get();
+	VLCMediaObject(libvlc_media_instance_t * mediaInstance, QObject * parent);
+	~VLCMediaObject();
+
+signals:
+
+	void timeChanged(qint64 time);
+
+private:
+
+	void connectToAllVLCEvents();
+
+	libvlc_event_manager_t * libvlc_media_instance_event_manager();
 
 	void libvlc_event_attach(libvlc_event_type_t event_type);
 
@@ -55,23 +60,13 @@ public:
 
 	const char * libvlc_event_type_name(libvlc_event_type_t event_type);
 
-signals:
-
-	void timeChanged(const libvlc_event_t * event, void * user_data);
-
-private:
-
-	VLCEvents(QObject * parent);
-	~VLCEvents();
-
 	static void libvlc_callback(const libvlc_event_t * event, void * user_data);
 
-	/** Hack, global variable. */
-	static VLCEvents * _vlcevents;
-
 	libvlc_event_manager_t * _eventManager;
+
+	libvlc_media_instance_t * _mediaInstance;
 };
 
 }}	//Namespace Phonon::VLC
 
-#endif	//PHONON_VLC_VLCEVENTS_H
+#endif	//PHONON_VLC_VLCMEDIAOBJECT_H

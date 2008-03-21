@@ -30,10 +30,6 @@ MediaObject::MediaObject(QObject * parent)
 	: QObject(parent) {
 
 	_mediaInstance = NULL;
-
-	VLCEvents::get()->libvlc_event_attach(libvlc_MediaInstanceTimeChanged);
-	connect(VLCEvents::get(), SIGNAL(timeChanged(const libvlc_event_t *, void *)),
-		SLOT(timeChanged(const libvlc_event_t *, void *)));
 }
 
 MediaObject::~MediaObject() {
@@ -51,6 +47,13 @@ void MediaObject::play() {
 
 		//Create a media instance playing environement
 		_mediaInstance = VLCLoader::get()->libvlc_media_instance_new_from_media_descriptor(md);
+
+
+		VLCMediaObject * vlcMediaObject = new VLCMediaObject(_mediaInstance, this);
+
+		connect(vlcMediaObject, SIGNAL(timeChanged(qint64)),
+			SIGNAL(tick(qint64)));
+
 
 		//Hook into a window
 		VLCLoader::get()->libvlc_media_instance_set_drawable(_mediaInstance, VLCLoader::get()->getDrawableWidget());
@@ -195,10 +198,6 @@ bool MediaObject::hasInterface(Interface iface) const {
 
 QVariant MediaObject::interfaceCall(Interface iface, int command, const QList<QVariant> & arguments) {
 	return new QVariant();
-}
-
-void MediaObject::timeChanged(const libvlc_event_t * event, void * user_data) {
-	emit tick(/*event->event_type_specific->media_instance_time_changed->new_time*/100);
 }
 
 }}	//Namespace Phonon::VLC

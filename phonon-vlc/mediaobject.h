@@ -81,10 +81,6 @@ signals:
 
 	void tick(qint64 time);
 
-private slots:
-
-	void timeChanged(const libvlc_event_t * event, void * user_data);
-
 private:
 
 	MediaSource _mediaSource;
