@@ -33,6 +33,7 @@ MainWindow::MainWindow() {
 
 	_videoWidget = new Phonon::VideoWidget(this);
 	videoLayout->addWidget(_videoWidget);
+	_videoWidget->setMinimumHeight(200);
 	Phonon::createPath(_mediaObject, _videoWidget);
 
 	_audioOutput = new Phonon::AudioOutput(Phonon::VideoCategory, this);
