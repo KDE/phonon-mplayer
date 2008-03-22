@@ -77,11 +77,12 @@ public:
 signals:
 
 	//void aboutToFinish()
+	//void finished();
 	//void bufferStatus(int percentFilled);
 	//void currentSourceChanged(const Phonon::MediaSource & newSource);
 	//void finished()
 	//void hasVideoChanged(bool hasVideo);
-	//void metaDataChanged()
+	void metaDataChanged(const QMultiMap<QString, QString> & metaData);
 	//void prefinishMarkReached(qint32 msecToEnd);
 	//void seekableChanged(bool isSeekable);
 	void stateChanged(Phonon::State newState, Phonon::State oldState);
@@ -94,6 +95,7 @@ private slots:
 
 private:
 
+	void loadMediaInternal(const QString & filename);
 	void playInternal(const QString & filename);
 
 	void resume();

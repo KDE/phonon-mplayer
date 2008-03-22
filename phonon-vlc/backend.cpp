@@ -45,11 +45,11 @@ Backend::Backend(QObject * parent, const QVariantList &)
 	setProperty("backendVersion", QLatin1String("0.1"));
 	setProperty("backendWebsite", QLatin1String("http://multimedia.kde.org/"));
 
-	qDebug() << "Using VLC version:" << "not yet implemented";
-
 	//Before everything else
 	//Create VLC instance through lazy initialization
 	VLCLoader::get();
+
+	qDebug() << "Using VLC version:" << VLCLoader::get().libvlc_version();
 }
 
 Backend::~Backend() {
@@ -214,7 +214,8 @@ void Backend::freeSoundcardDevices() {
 }
 
 QString Backend::toString() const {
-	return "VLC Phonon Backend by Tanguy Krotoff <tkrotoff@gmail.com>";
+	return "VLC Phonon Backend by Tanguy Krotoff <tkrotoff@gmail.com>,"
+		"libvlc version=" + QString(VLCLoader::get().libvlc_version());
 }
 
 }}	//Namespace Phonon::VLC

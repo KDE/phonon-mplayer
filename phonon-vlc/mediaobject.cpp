@@ -31,15 +31,24 @@ MediaObject::MediaObject(QObject * parent)
 	: QObject(parent) {
 
 	_currentState = Phonon::LoadingState;
-	_vlcMediaObject = NULL;
+
+	_vlcMediaObject = new VLCMediaObject(this);
+
+	connect(_vlcMediaObject, SIGNAL(tick(qint64)),
+		SIGNAL(tick(qint64)));
+	connect(_vlcMediaObject, SIGNAL(stateChanged(Phonon::State)),
+		SLOT(stateChangedInternal(Phonon::State)));
+	connect(_vlcMediaObject, SIGNAL(totalTimeChanged(qint64)),
+		SIGNAL(totalTimeChanged(qint64)));
+	connect(_vlcMediaObject, SIGNAL(metaDataChanged(const QMultiMap<QString, QString> &)),
+		SIGNAL(metaDataChanged(const QMultiMap<QString, QString> &)));
 }
 
 MediaObject::~MediaObject() {
+	delete _vlcMediaObject;
 }
 
 void MediaObject::play() {
-	qDebug() << "MediaObject::play()";
-
 	switch (_mediaSource.type()) {
 
 	case MediaSource::Invalid:
@@ -68,34 +77,34 @@ void MediaObject::play() {
 			playInternal(_mediaSource.deviceName());
 			break;
 		default:
-			return;
+			qCritical() << __FUNCTION__ << "error: unsupported MediaSource::Disc";
 		}
 		break;
 	}
 
 	case MediaSource::Stream:
 		break;
+
+	default:
+		qCritical() << __FUNCTION__ << "error: unsupported MediaSource";
+		break;
+
 	}
 }
 
+void MediaObject::loadMediaInternal(const QString & filename) {
+	//Loads the media_instance
+	_vlcMediaObject->loadMedia(filename);
+}
+
 void MediaObject::playInternal(const QString & filename) {
+	loadMediaInternal(filename);
+
 	if (_currentState == Phonon::PlayingState || _currentState == Phonon::PausedState) {
 		resume();
 	}
 
 	else {
-		//Delete previous _vlcMediaObject
-		delete _vlcMediaObject;
-
-		_vlcMediaObject = new VLCMediaObject(filename, this);
-
-		connect(_vlcMediaObject, SIGNAL(tick(qint64)),
-			SIGNAL(tick(qint64)));
-		connect(_vlcMediaObject, SIGNAL(stateChanged(Phonon::State)),
-			SLOT(stateChangedInternal(Phonon::State)));
-		connect(_vlcMediaObject, SIGNAL(totalTimeChanged(qint64)),
-			SIGNAL(totalTimeChanged(qint64)));
-
 		//Play the media_instance
 		_vlcMediaObject->play();
 	}
@@ -125,43 +134,23 @@ void MediaObject::setTickInterval(qint32 interval) {
 }
 
 bool MediaObject::hasVideo() const {
-	if (_vlcMediaObject) {
-		return _vlcMediaObject->hasVideo();
-	} else {
-		return false;
-	}
+	return _vlcMediaObject->hasVideo();
 }
 
 bool MediaObject::isSeekable() const {
-	if (_vlcMediaObject) {
-		return _vlcMediaObject->isSeekable();
-	} else {
-		return false;
-	}
+	return _vlcMediaObject->isSeekable();
 }
 
 qint64 MediaObject::currentTime() const {
-	if (_vlcMediaObject) {
-		return _vlcMediaObject->currentTime();
-	} else {
-		return 0;
-	}
+	return _vlcMediaObject->currentTime();
 }
 
 Phonon::State MediaObject::state() const {
-	if (_vlcMediaObject) {
-		return _vlcMediaObject->state();
-	} else {
-		return _currentState;
-	}
+	return _vlcMediaObject->state();
 }
 
 QString MediaObject::errorString() const {
-	if (_vlcMediaObject) {
-		return _vlcMediaObject->errorString();
-	} else {
-		return "";
-	}
+	return _vlcMediaObject->errorString();
 }
 
 Phonon::ErrorType MediaObject::errorType() const {
@@ -169,12 +158,7 @@ Phonon::ErrorType MediaObject::errorType() const {
 }
 
 qint64 MediaObject::totalTime() const {
-	if (_vlcMediaObject) {
-		return _vlcMediaObject->totalTime();
-	} else {
-		//No media
-		return 0;
-	}
+	return _vlcMediaObject->totalTime();
 }
 
 MediaSource MediaObject::source() const {
@@ -188,8 +172,10 @@ void MediaObject::setSource(const MediaSource & source) {
 	case MediaSource::Invalid:
 		break;
 	case MediaSource::LocalFile:
+		loadMediaInternal(_mediaSource.fileName());
 		break;
 	case MediaSource::Url:
+		loadMediaInternal(_mediaSource.url().toString());
 		break;
 	case MediaSource::Disc: {
 		switch (source.discType()) {
@@ -197,10 +183,13 @@ void MediaObject::setSource(const MediaSource & source) {
 			//kFatal(610) << "I should never get to see a MediaSource that is a disc but doesn't specify which one";
 			return;
 		case Phonon::Cd:
+			loadMediaInternal(_mediaSource.deviceName());
 			break;
 		case Phonon::Dvd:
+			loadMediaInternal(_mediaSource.deviceName());
 			break;
 		case Phonon::Vcd:
+			loadMediaInternal(_mediaSource.deviceName());
 			break;
 		default:
 			return;

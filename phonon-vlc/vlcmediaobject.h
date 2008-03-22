@@ -25,6 +25,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
+#include <QtCore/QMultiMap>
 
 class QLibrary;
 
@@ -43,9 +44,10 @@ class VLCMediaObject : public QObject {
 	Q_OBJECT
 public:
 
-	VLCMediaObject(const QString & filename, QObject * parent);
+	VLCMediaObject(QObject * parent);
 	~VLCMediaObject();
 
+	void loadMedia(const QString & filename);
 	void play();
 	void pause();
 	void stop();
@@ -68,7 +70,7 @@ signals:
 	//void currentSourceChanged(const Phonon::MediaSource & newSource);
 	//void finished()
 	//void hasVideoChanged(bool hasVideo);
-	//void metaDataChanged()
+	void metaDataChanged(const QMultiMap<QString, QString> & metaData);
 	//void prefinishMarkReached(qint32 msecToEnd);
 	//void seekableChanged(bool isSeekable);
 	void stateChanged(Phonon::State newState);
@@ -78,6 +80,9 @@ signals:
 private:
 
 	void connectToAllVLCEvents();
+
+	void updateMetaData();
+	char * libvlc_media_descriptor_get_meta(libvlc_meta_t meta);
 
 	void libvlc_media_descriptor_release();
 

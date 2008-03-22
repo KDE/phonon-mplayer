@@ -35,8 +35,10 @@ namespace VLC
 //Hack, global variable
 VLCLoader * VLCLoader::_vlcLoader = NULL;
 
-VLCLoader::VLCLoader(QObject * parent) {
-	_vlc = new QLibrary(parent);
+VLCLoader::VLCLoader(QObject * parent)
+	: QObject(parent) {
+
+	_vlc = new QLibrary(this);
 	_instance = NULL;
 	_exception = new libvlc_exception_t;
 }
@@ -85,15 +87,31 @@ void VLCLoader::checkException() {
 }
 
 bool VLCLoader::load(const QString & libname) {
-	qDebug() << "VLCLoader=" << libname;
 	_vlc->setFileName(libname);
 	_vlc->load();
 	if (!_vlc->isLoaded()) {
-		qDebug() << "libvlc couldn't be loaded:" << _vlc->errorString();
+		qCritical() << "libvlc couldn't be loaded:" << _vlc->errorString();
 		return false;
 	} else {
 		return true;
 	}
+}
+
+const char * VLCLoader::libvlc_version() {
+	QDir vlcPath(QCoreApplication::applicationDirPath());
+	QFile vlcOldDll(vlcPath.path() + "/libvlc");
+
+	QLibrary vlcOldAPI(this);
+	vlcOldAPI.setFileName(vlcOldDll.fileName());
+	vlcOldAPI.load();
+
+	typedef char const * (*fct) (void);
+	fct function = (fct) vlcOldAPI.resolve("VLC_Version");
+	const char * version = NULL;
+	if (function) {
+		version = function();
+	}
+	return version;
 }
 
 void VLCLoader::libvlc_new(int argc, const char * const * argv) {

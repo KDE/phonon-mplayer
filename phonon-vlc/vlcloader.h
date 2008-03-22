@@ -53,9 +53,11 @@ public:
 
 	bool load(const QString & libname);
 
+	//Initialization
 	void libvlc_new(int argc, const char * const * argv);
 	void libvlc_release();
-	void libvlc_exception_init();
+
+	const char * libvlc_version();
 
 	libvlc_media_descriptor_t * libvlc_media_descriptor_new(const QString & filename);
 
@@ -68,6 +70,8 @@ public:
 	void setDrawableWidget(const QWidget * widget);
 	int getDrawableWidget() const;
 
+	//Exception
+	void libvlc_exception_init();
 	void checkException();
 	const char * libvlc_exception_get_message();
 
