@@ -13,6 +13,8 @@ set(phonon_vlc_SRCS
 	audiooutput.cpp
 	vlcloader.cpp
 	vlcmediaobject.cpp
+	vlc_symbols.cpp
+	libloader.cpp
 )
 
 qt4_wrap_cpp(phonon_vlc_SRCS
@@ -22,6 +24,8 @@ qt4_wrap_cpp(phonon_vlc_SRCS
 	audiooutput.h
 	vlcloader.h
 	vlcmediaobject.h
+	vlc_symbols.h
+	libloader.h
 )
 
 add_library(phonon_vlc MODULE ${phonon_vlc_SRCS})

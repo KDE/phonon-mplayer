@@ -21,6 +21,7 @@
 #include "vlcmediaobject.h"
 
 #include <QtCore/QUrl>
+#include <QtCore/QMetaType>
 
 namespace Phonon
 {
@@ -28,27 +29,48 @@ namespace VLC
 {
 
 MediaObject::MediaObject(QObject * parent)
-	: QObject(parent) {
+	: QThread(parent) {
 
 	_currentState = Phonon::LoadingState;
 
 	_vlcMediaObject = new VLCMediaObject(this);
 
+	qRegisterMetaType<QMultiMap<QString, QString> >("QMultiMap<QString, QString>");
+
 	connect(_vlcMediaObject, SIGNAL(tick(qint64)),
-		SIGNAL(tick(qint64)));
+		SIGNAL(tick(qint64)), Qt::QueuedConnection);
 	connect(_vlcMediaObject, SIGNAL(stateChanged(Phonon::State)),
-		SLOT(stateChangedInternal(Phonon::State)));
+		SLOT(stateChangedInternal(Phonon::State)), Qt::QueuedConnection);
 	connect(_vlcMediaObject, SIGNAL(totalTimeChanged(qint64)),
-		SIGNAL(totalTimeChanged(qint64)));
+		SIGNAL(totalTimeChanged(qint64)), Qt::QueuedConnection);
 	connect(_vlcMediaObject, SIGNAL(metaDataChanged(const QMultiMap<QString, QString> &)),
-		SIGNAL(metaDataChanged(const QMultiMap<QString, QString> &)));
+		SIGNAL(metaDataChanged(const QMultiMap<QString, QString> &)), Qt::QueuedConnection);
+
+	/* Threaded connections */
+
+	connect(this, SIGNAL(playSignalThreaded()), SLOT(playSlotThreaded()), Qt::QueuedConnection);
+	connect(this, SIGNAL(pauseSignalThreaded()), SLOT(pauseSlotThreaded()), Qt::QueuedConnection);
+	connect(this, SIGNAL(stopSignalThreaded()), SLOT(stopSlotThreaded()), Qt::QueuedConnection);
+	connect(this, SIGNAL(seekSignalThreaded(qint64)), SLOT(seekSlotThreaded(qint64)), Qt::QueuedConnection);
+	qRegisterMetaType<MediaSource>("MediaSource");
+	connect(this, SIGNAL(setSourceSignalThreaded(const MediaSource &)), SLOT(setSourceSlotThreaded(const MediaSource &)), Qt::QueuedConnection);
+
+	start();
 }
 
 MediaObject::~MediaObject() {
 	delete _vlcMediaObject;
 }
 
+void MediaObject::run() {
+	exec();
+}
+
 void MediaObject::play() {
+	emit playSignalThreaded();
+}
+
+void MediaObject::playSlotThreaded() {
 	switch (_mediaSource.type()) {
 
 	case MediaSource::Invalid:
@@ -77,7 +99,7 @@ void MediaObject::play() {
 			playInternal(_mediaSource.deviceName());
 			break;
 		default:
-			qCritical() << __FUNCTION__ << "error: unsupported MediaSource::Disc";
+			qCritical() << __FUNCTION__ << "error: unsupported MediaSource::Disc:" << _mediaSource.discType();
 		}
 		break;
 	}
@@ -86,7 +108,7 @@ void MediaObject::play() {
 		break;
 
 	default:
-		qCritical() << __FUNCTION__ << "error: unsupported MediaSource";
+		qCritical() << __FUNCTION__ << "error: unsupported MediaSource:" << _mediaSource.type();
 		break;
 
 	}
@@ -95,17 +117,18 @@ void MediaObject::play() {
 void MediaObject::loadMediaInternal(const QString & filename) {
 	//Loads the media_instance
 	_vlcMediaObject->loadMedia(filename);
+
+	emit currentSourceChanged(_mediaSource);
 }
 
 void MediaObject::playInternal(const QString & filename) {
-	loadMediaInternal(filename);
-
-	if (_currentState == Phonon::PlayingState || _currentState == Phonon::PausedState) {
+	if (_currentState == Phonon::PausedState) {
 		resume();
 	}
 
 	else {
 		//Play the media_instance
+		loadMediaInternal(filename);
 		_vlcMediaObject->play();
 	}
 }
@@ -115,14 +138,26 @@ void MediaObject::resume() {
 }
 
 void MediaObject::pause() {
+	emit pauseSignalThreaded();
+}
+
+void MediaObject::pauseSlotThreaded() {
 	_vlcMediaObject->pause();
 }
 
 void MediaObject::stop() {
+	emit stopSignalThreaded();
+}
+
+void MediaObject::stopSlotThreaded() {
 	_vlcMediaObject->stop();
 }
 
 void MediaObject::seek(qint64 milliseconds) {
+	emit seekSignalThreaded(milliseconds);
+}
+
+void MediaObject::seekSlotThreaded(qint64 milliseconds) {
 	_vlcMediaObject->seek(milliseconds);
 }
 
@@ -142,7 +177,23 @@ bool MediaObject::isSeekable() const {
 }
 
 qint64 MediaObject::currentTime() const {
-	return _vlcMediaObject->currentTime();
+	Phonon::State st = state();
+
+	switch(st) {
+	case Phonon::PausedState:
+	case Phonon::BufferingState:
+	case Phonon::PlayingState:
+		return _vlcMediaObject->currentTime();
+	case Phonon::StoppedState:
+	case Phonon::LoadingState:
+		return 0;
+	case Phonon::ErrorState:
+		break;
+	default:
+		qCritical() << __FUNCTION__ << "error: unsupported Phonon::State:" << st;
+	}
+
+	return -1;
 }
 
 Phonon::State MediaObject::state() const {
@@ -166,10 +217,15 @@ MediaSource MediaObject::source() const {
 }
 
 void MediaObject::setSource(const MediaSource & source) {
+	emit setSourceSignalThreaded(source);
+}
+
+void MediaObject::setSourceSlotThreaded(const MediaSource & source) {
 	_mediaSource = source;
 
 	switch (source.type()) {
 	case MediaSource::Invalid:
+		stop();
 		break;
 	case MediaSource::LocalFile:
 		loadMediaInternal(_mediaSource.fileName());
@@ -180,7 +236,7 @@ void MediaObject::setSource(const MediaSource & source) {
 	case MediaSource::Disc: {
 		switch (source.discType()) {
 		case Phonon::NoDisc:
-			//kFatal(610) << "I should never get to see a MediaSource that is a disc but doesn't specify which one";
+			qCritical() << __FUNCTION__ << "error: the MediaSource::Disc doesn't specify which one (Phonon::NoDisc)";
 			return;
 		case Phonon::Cd:
 			loadMediaInternal(_mediaSource.deviceName());
@@ -192,17 +248,21 @@ void MediaObject::setSource(const MediaSource & source) {
 			loadMediaInternal(_mediaSource.deviceName());
 			break;
 		default:
-			return;
+			qCritical() << __FUNCTION__ << "error: unsupported MediaSource::Disc:" << source.discType();
+			break;
 		}
 		}
 		break;
 	case MediaSource::Stream:
 		break;
+	default:
+		qCritical() << __FUNCTION__ << "error: unsupported MediaSource:" << source.type();
+		break;
 	}
 }
 
 void MediaObject::setNextSource(const MediaSource & source) {
-	_mediaSource = source;
+	setSource(source);
 }
 
 qint32 MediaObject::prefinishMark() const {

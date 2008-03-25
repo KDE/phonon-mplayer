@@ -19,8 +19,8 @@
 #include "vlcmediaobject.h"
 
 #include "vlcloader.h"
+#include "vlc_symbols.h"
 
-#include <QtCore/QLibrary>
 #include <QtCore/QtDebug>
 
 namespace Phonon
@@ -28,96 +28,73 @@ namespace Phonon
 namespace VLC
 {
 
+//VLC returns a strange position... have to multiply by VLC_POSITION_RESOLUTION
+static const int VLC_POSITION_RESOLUTION = 10000;
+
 VLCMediaObject::VLCMediaObject(QObject * parent)
 	: QObject(parent) {
-
-	_vlc = VLCLoader::getVLCLib();
-	_exception = VLCLoader::getVLCException();
 
 	_mediaInstance = NULL;
 	_mediaInstanceEventManager = NULL;
 	_mediaDescriptor = NULL;
 	_mediaDescriptorEventManager = NULL;
+	_mediaList = NULL;
+	_mediaListEventManager = NULL;
 }
 
 VLCMediaObject::~VLCMediaObject() {
 }
 
 void VLCMediaObject::loadMedia(const QString & filename) {
+	qDebug() << "loadMedia" << (int) this << filename;
+
 	//Create a new item
-	_mediaDescriptor = VLCLoader::get().libvlc_media_descriptor_new(filename);
+	_mediaDescriptor = p_libvlc_media_descriptor_new(_instance, filename.toAscii(), _exception);
 
 	//Create a media instance playing environement
-	_mediaInstance = libvlc_media_instance_new_from_media_descriptor();
-
-	//Hook into a window
-	libvlc_media_instance_set_drawable(VLCLoader::get().getDrawableWidget());
+	_mediaInstance = p_libvlc_media_instance_new_from_media_descriptor(_mediaDescriptor, _exception);
 
 	//No need to keep the media descriptor now
-	//libvlc_media_descriptor_release();
+	//p_libvlc_media_descriptor_release(_mediaDescriptor);
 
 	//connectToAllVLCEvents() needs _mediaInstance
 	connectToAllVLCEvents();
+
+	qDebug() << "duration:" << p_libvlc_media_descriptor_get_duration(_mediaDescriptor, _exception);
+
+	updateMetaData();
+	emit stateChanged(Phonon::StoppedState);
 }
 
 void VLCMediaObject::play() {
-	typedef void (*fct) (libvlc_media_instance_t *, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_media_instance_play");
-	if (function) {
-		function(_mediaInstance, _exception);
-		checkException();
-	} else {
-	}
+	//Hook into a window
+	//libvlc_media_instance_set_drawable(_mediaInstance, drawable, _exception);
+
+	p_libvlc_media_instance_play(_mediaInstance, _exception);
+	checkException();
 }
 
 void VLCMediaObject::pause() {
-	if (_mediaInstance) {
-		typedef void (*fct) (libvlc_media_instance_t *, libvlc_exception_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_instance_pause");
-		if (function) {
-			function(_mediaInstance, _exception);
-			checkException();
-		} else {
-		}
-	}
+	p_libvlc_media_instance_pause(_mediaInstance, _exception);
+	checkException();
 }
 
 void VLCMediaObject::stop() {
-	if (_mediaInstance) {
-		typedef void (*fct) (libvlc_media_instance_t *, libvlc_exception_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_instance_stop");
-		if (function) {
-			function(_mediaInstance, _exception);
-			checkException();
-		}
-		//VLC does not send a StoppedState when running libvlc_media_instance_stop() :/
-		emit stateChanged(Phonon::StoppedState);
-	}
+	p_libvlc_media_instance_stop(_mediaInstance, _exception);
+	checkException();
+
+	//VLC does not send a StoppedState when running libvlc_media_instance_stop() :/
+	emit stateChanged(Phonon::StoppedState);
 }
 
 void VLCMediaObject::seek(qint64 milliseconds) {
-	if (_mediaInstance) {
-		typedef libvlc_event_manager_t * (*fct) (libvlc_media_instance_t *, libvlc_time_t, libvlc_exception_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_instance_set_time");
-		if (function) {
-			function(_mediaInstance, milliseconds, _exception);
-			checkException();
-		} else {
-		}
-	}
+	p_libvlc_media_instance_set_time(_mediaInstance, milliseconds * VLC_POSITION_RESOLUTION, _exception);
+	checkException();
 }
 
 Phonon::State VLCMediaObject::state() const {
-	libvlc_state_t st = libvlc_NothingSpecial;
-
-	if (_mediaInstance) {
-		typedef libvlc_state_t (*fct) (libvlc_media_instance_t *, libvlc_exception_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_instance_get_state");
-		if (function) {
-			st = function(_mediaInstance, _exception);
-			checkException();
-		}
-	}
+	libvlc_state_t st = p_libvlc_media_instance_get_state(_mediaInstance, _exception);
+	checkException();
 
 	Phonon::State state;
 
@@ -155,69 +132,27 @@ Phonon::State VLCMediaObject::state() const {
 }
 
 QString VLCMediaObject::errorString() const {
-	return VLCLoader::get().libvlc_exception_get_message();
+	return p_libvlc_exception_get_message(_exception);
 }
 
 bool VLCMediaObject::hasVideo() const {
-	bool hasVideo = false;
-
-	if (_mediaInstance) {
-		typedef bool (*fct) (libvlc_media_instance_t *, libvlc_exception_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_instance_has_vout");
-
-		if (function) {
-			hasVideo = function(_mediaInstance, _exception);
-			checkException();
-		}
-	}
+	bool hasVideo = p_libvlc_media_instance_has_vout(_mediaInstance, _exception);
+	checkException();
 
 	return hasVideo;
 }
 
 bool VLCMediaObject::isSeekable() const {
-	bool isSeekable = false;
-
-	if (_mediaInstance) {
-		typedef bool (*fct) (libvlc_media_instance_t *, libvlc_exception_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_instance_is_seekable");
-		if (function) {
-			isSeekable = function(_mediaInstance, _exception);
-			checkException();
-		}
-	}
+	bool isSeekable = p_libvlc_media_instance_is_seekable(_mediaInstance, _exception);
+	checkException();
 
 	return isSeekable;
 }
 
-libvlc_media_instance_t * VLCMediaObject::libvlc_media_instance_new_from_media_descriptor() {
-	libvlc_media_instance_t * mi = NULL;
-
-	if (_mediaDescriptor) {
-		typedef libvlc_media_instance_t * (*fct) (libvlc_media_descriptor_t *, libvlc_exception_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_instance_new_from_media_descriptor");
-		if (function) {
-			mi = function(_mediaDescriptor, _exception);
-			checkException();
-		}
-	}
-
-	return mi;
-}
-
-void VLCMediaObject::libvlc_media_descriptor_release() {
-	if (_mediaDescriptor) {
-		typedef void (*fct) (libvlc_media_descriptor_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_descriptor_release");
-		if (function) {
-			function(_mediaDescriptor);
-		} else {
-		}
-	}
-}
-
 void VLCMediaObject::connectToAllVLCEvents() {
-	_mediaInstanceEventManager = libvlc_media_instance_event_manager();
-	_mediaDescriptorEventManager = libvlc_media_descriptor_event_manager();
+	_mediaInstanceEventManager = p_libvlc_media_instance_event_manager(_mediaInstance, _exception);
+	_mediaDescriptorEventManager = p_libvlc_media_descriptor_event_manager(_mediaDescriptor, _exception);
+	//_mediaListEventManager = p_libvlc_media_list_event_manager(_mediaList, _exception);
 
 	libvlc_event_type_t eventsMediaInstance[] = {
 		libvlc_MediaInstancePlayed,
@@ -228,11 +163,6 @@ void VLCMediaObject::connectToAllVLCEvents() {
 		libvlc_MediaInstancePositionChanged,
 		libvlc_MediaInstanceSeekableChanged,
 		libvlc_MediaInstancePausableChanged,
-
-		//~ libvlc_MediaListItemAdded,
-		//~ libvlc_MediaListWillAddItem,
-		//~ libvlc_MediaListItemDeleted,
-		//~ libvlc_MediaListWillDeleteItem,
 
 		//~ libvlc_MediaListViewItemAdded,
 		//~ libvlc_MediaListViewWillAddItem,
@@ -248,7 +178,7 @@ void VLCMediaObject::connectToAllVLCEvents() {
 	};
 	int nbEvents = sizeof(eventsMediaInstance) / sizeof(*eventsMediaInstance);
 	for (int i = 0; i < nbEvents; i++) {
-		libvlc_event_attach(_mediaInstanceEventManager, eventsMediaInstance[i]);
+		p_libvlc_event_attach(_mediaInstanceEventManager, eventsMediaInstance[i], libvlc_callback, this, _exception);
 	}
 
 	libvlc_event_type_t eventsMediaDescriptor[] = {
@@ -261,47 +191,33 @@ void VLCMediaObject::connectToAllVLCEvents() {
 	};
 	nbEvents = sizeof(eventsMediaDescriptor) / sizeof(*eventsMediaDescriptor);
 	for (int i = 0; i < nbEvents; i++) {
-		libvlc_event_attach(_mediaDescriptorEventManager, eventsMediaDescriptor[i]);
+		p_libvlc_event_attach(_mediaDescriptorEventManager, eventsMediaDescriptor[i], libvlc_callback, this, _exception);
+		checkException();
 	}
-}
-
-libvlc_event_manager_t * VLCMediaObject::libvlc_media_instance_event_manager() {
-	libvlc_event_manager_t * evt = NULL;
-
-	if (_mediaInstance) {
-		typedef libvlc_event_manager_t * (*fct) (libvlc_media_instance_t *, libvlc_exception_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_instance_event_manager");
-		if (function) {
-			evt = function(_mediaInstance, _exception);
-		}
+/*
+	libvlc_event_type_t eventsMediaList[] = {
+		libvlc_MediaListItemAdded,
+		libvlc_MediaListWillAddItem,
+		libvlc_MediaListItemDeleted,
+		libvlc_MediaListWillDeleteItem,
+	};
+	nbEvents = sizeof(eventsMediaList) / sizeof(*eventsMediaList);
+	for (int i = 0; i < nbEvents; i++) {
+		p_libvlc_event_attach(_mediaListEventManager, eventsMediaList[i], libvlc_callback, this, _exception);
 	}
-
-	return evt;
-}
-
-libvlc_event_manager_t * VLCMediaObject::libvlc_media_descriptor_event_manager() {
-	libvlc_event_manager_t * evt = NULL;
-
-	if (_mediaDescriptor) {
-		typedef libvlc_event_manager_t * (*fct) (libvlc_media_descriptor_t *, libvlc_exception_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_descriptor_event_manager");
-		if (function) {
-			evt = function(_mediaDescriptor, _exception);
-		}
-	}
-
-	return evt;
+*/
 }
 
 void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_data) {
 	VLCMediaObject * vlcMediaObject = (VLCMediaObject *) user_data;
 
-	qDebug() << "VLC event=" << vlcMediaObject->libvlc_event_type_name(event->type);
+	qDebug() << "event=" << (int) vlcMediaObject << p_libvlc_event_type_name(event->type);
 
 	if (event->type == libvlc_MediaInstanceTimeChanged) {
-		//new_time / 1000 since VLC adds * 1000, don't know why...
+		//new_time / VLC_POSITION_RESOLUTION since VLC adds * VLC_POSITION_RESOLUTION, don't know why...
 		qDebug() << "new_time=" << event->u.media_instance_time_changed.new_time;
-		emit vlcMediaObject->tick(event->u.media_instance_time_changed.new_time / 1000);
+		emit vlcMediaObject->tick(event->u.media_instance_time_changed.new_time / VLC_POSITION_RESOLUTION);
+		////////BUG POSITION//////////
 	}
 
 	//void stateChanged(Phonon::State newState, Phonon::State oldState);
@@ -338,8 +254,8 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 	//Meta descriptor event
 
 	if (event->type == libvlc_MediaDescriptorDurationChanged) {
-		//new_duration / 1000 since VLC adds * 1000, don't know why...
-		emit vlcMediaObject->totalTimeChanged(event->u.media_descriptor_duration_changed.new_duration / 1000);
+		//new_duration / VLC_POSITION_RESOLUTION since VLC adds * VLC_POSITION_RESOLUTION, don't know why...
+		emit vlcMediaObject->totalTimeChanged(event->u.media_descriptor_duration_changed.new_duration / VLC_POSITION_RESOLUTION);
 	}
 
 	if (event->type == libvlc_MediaDescriptorMetaChanged) {
@@ -376,123 +292,33 @@ void VLCMediaObject::updateMetaData() {
 
 	QMultiMap<QString, QString> metaDataMap;
 
-	metaDataMap.insert(QLatin1String("ARTIST"), QString::fromUtf8(libvlc_media_descriptor_get_meta(libvlc_meta_Artist)));
-	metaDataMap.insert(QLatin1String("ALBUM"), QString::fromUtf8(libvlc_media_descriptor_get_meta(libvlc_meta_Album)));
-	metaDataMap.insert(QLatin1String("TITLE"), QString::fromUtf8(libvlc_media_descriptor_get_meta(libvlc_meta_Title)));
-	metaDataMap.insert(QLatin1String("DATE"), QString::fromUtf8(libvlc_media_descriptor_get_meta(libvlc_meta_Date)));
-	metaDataMap.insert(QLatin1String("GENRE"), QString::fromUtf8(libvlc_media_descriptor_get_meta(libvlc_meta_Genre)));
-	metaDataMap.insert(QLatin1String("TRACKNUMBER"), QString::fromUtf8(libvlc_media_descriptor_get_meta(libvlc_meta_TrackNumber)));
-	metaDataMap.insert(QLatin1String("DESCRIPTION"), QString::fromUtf8(libvlc_media_descriptor_get_meta(libvlc_meta_Description)));
+	metaDataMap.insert(QLatin1String("ARTIST"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_mediaDescriptor, libvlc_meta_Artist, _exception)));
+	metaDataMap.insert(QLatin1String("ALBUM"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_mediaDescriptor, libvlc_meta_Album, _exception)));
+	metaDataMap.insert(QLatin1String("TITLE"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_mediaDescriptor, libvlc_meta_Title, _exception)));
+	metaDataMap.insert(QLatin1String("DATE"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_mediaDescriptor, libvlc_meta_Date, _exception)));
+	metaDataMap.insert(QLatin1String("GENRE"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_mediaDescriptor, libvlc_meta_Genre, _exception)));
+	metaDataMap.insert(QLatin1String("TRACKNUMBER"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_mediaDescriptor, libvlc_meta_TrackNumber, _exception)));
+	metaDataMap.insert(QLatin1String("DESCRIPTION"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_mediaDescriptor, libvlc_meta_Description, _exception)));
 
-	metaDataMap.insert(QLatin1String("COPYRIGHT"), QString::fromUtf8(libvlc_media_descriptor_get_meta(libvlc_meta_TrackNumber)));
-	metaDataMap.insert(QLatin1String("URL"), QString::fromUtf8(libvlc_media_descriptor_get_meta(libvlc_meta_URL)));
-	metaDataMap.insert(QLatin1String("ENCODEDBY"), QString::fromUtf8(libvlc_media_descriptor_get_meta(libvlc_meta_EncodedBy)));
+	metaDataMap.insert(QLatin1String("COPYRIGHT"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_mediaDescriptor, libvlc_meta_TrackNumber, _exception)));
+	metaDataMap.insert(QLatin1String("URL"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_mediaDescriptor, libvlc_meta_URL, _exception)));
+	metaDataMap.insert(QLatin1String("ENCODEDBY"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_mediaDescriptor, libvlc_meta_EncodedBy, _exception)));
 
 	emit metaDataChanged(metaDataMap);
 }
 
-char * VLCMediaObject::libvlc_media_descriptor_get_meta(libvlc_meta_t meta) {
-	char * name = NULL;
-
-	if (_mediaDescriptor) {
-		typedef char * (*fct) (libvlc_media_descriptor_t *, libvlc_meta_t, libvlc_exception_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_descriptor_get_meta");
-		if (function) {
-			name = function(_mediaDescriptor, meta, _exception);
-			checkException();
-		}
-	}
-
-	return name;
-}
-
-void VLCMediaObject::libvlc_event_attach(libvlc_event_manager_t * event_manager, libvlc_event_type_t event_type) {
-	typedef void (*fct) (libvlc_event_manager_t *, libvlc_event_type_t, libvlc_callback_t, void *, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_event_attach");
-	if (function) {
-		function(event_manager, event_type, libvlc_callback, this, _exception);
-		checkException();
-	} else {
-	}
-}
-
-void VLCMediaObject::libvlc_event_detach(libvlc_event_manager_t * event_manager, libvlc_event_type_t event_type) {
-	typedef void (*fct) (libvlc_event_manager_t *, libvlc_event_type_t, libvlc_callback_t, void *, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_event_detach");
-	if (function) {
-		function(event_manager, event_type, libvlc_callback, this, _exception);
-		checkException();
-	} else {
-	}
-}
-
-const char * VLCMediaObject::libvlc_event_type_name(libvlc_event_type_t event_type) {
-	typedef const char * (*fct) (libvlc_event_type_t);
-	fct function = (fct) _vlc->resolve("libvlc_event_type_name");
-	const char * name = NULL;
-	if (function) {
-		name = function(event_type);
-	}
-	return name;
-}
-
 qint64 VLCMediaObject::totalTime() const {
-	libvlc_time_t t = 0;
-
-	if (_mediaInstance) {
-		typedef libvlc_time_t (*fct) (libvlc_media_instance_t *, libvlc_exception_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_instance_get_length");
-		if (function) {
-			t = function(_mediaInstance, _exception);
-			checkException();
-		}
-	}
+	libvlc_time_t t = p_libvlc_media_instance_get_length(_mediaInstance, _exception);
+	checkException();
 
 	return t;
 }
 
 qint64 VLCMediaObject::currentTime() const {
-	libvlc_time_t t = 0;
-
-	if (_mediaInstance) {
-		typedef libvlc_time_t (*fct) (libvlc_media_instance_t *, libvlc_exception_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_instance_get_time");
-		libvlc_time_t t = 0;
-		if (function) {
-			t = function(_mediaInstance, _exception);
-			checkException();
-		}
-	}
+	libvlc_time_t t = p_libvlc_media_instance_get_time(_mediaInstance, _exception);
+	checkException();
 
 	return t;
-}
-
-void VLCMediaObject::libvlc_media_instance_release() {
-	if (_mediaInstance) {
-		typedef void (*fct) (libvlc_media_instance_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_instance_release");
-		if (function) {
-			function(_mediaInstance);
-			checkException();
-		} else {
-		}
-	}
-}
-
-void VLCMediaObject::checkException() const {
-	VLCLoader::get().checkException();
-}
-
-void VLCMediaObject::libvlc_media_instance_set_drawable(libvlc_drawable_t drawable) {
-	if (_mediaInstance) {
-		typedef void (*fct) (libvlc_media_instance_t *, libvlc_drawable_t, libvlc_exception_t *);
-		fct function = (fct) _vlc->resolve("libvlc_media_instance_set_drawable");
-		if (function) {
-			function(_mediaInstance, drawable, _exception);
-			checkException();
-		} else {
-		}
-	}
 }
 
 }}	//Namespace Phonon::VLC

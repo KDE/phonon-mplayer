@@ -2,7 +2,7 @@
  * vlc.h: global header for libvlc (old-style)
  *****************************************************************************
  * Copyright (C) 1998-2004 the VideoLAN team
- * $Id: d8e00dcd9e3b4a78478704b10d5e96d01feac040 $
+ * $Id: 53e5e18933c57f67651f0176342c7fa9c9f045bd $
  *
  * Authors: Vincent Seguin <seguin@via.ecp.fr>
  *          Samuel Hocevar <sam@zoy.org>
@@ -38,12 +38,14 @@
 
 # ifdef __cplusplus
 extern "C" {
+# else
+#  include <stdbool.h>
 # endif
 
 /*****************************************************************************
  * Our custom types
  *****************************************************************************/
-typedef int vlc_bool_t;
+typedef bool vlc_bool_t;
 typedef struct vlc_list_t vlc_list_t;
 typedef struct vlc_object_t vlc_object_t;
 
@@ -131,8 +133,8 @@ struct vlc_list_t
 /*****************************************************************************
  * Booleans
  *****************************************************************************/
-#define VLC_FALSE 0
-#define VLC_TRUE  1
+#define VLC_FALSE false
+#define VLC_TRUE  true
 
 /*****************************************************************************
  * Playlist

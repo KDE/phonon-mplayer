@@ -22,7 +22,7 @@
 #include <phonon/mediaobjectinterface.h>
 #include <phonon/addoninterface.h>
 
-#include <QtCore/QObject>
+#include <QtCore/QThread>
 
 namespace Phonon
 {
@@ -36,7 +36,7 @@ class VLCMediaObject;
  *
  * @author Tanguy Krotoff
  */
-class MediaObject : public QObject, public MediaObjectInterface, public AddonInterface {
+class MediaObject : public QThread, public MediaObjectInterface, public AddonInterface {
 	Q_OBJECT
 	Q_INTERFACES(Phonon::MediaObjectInterface Phonon::AddonInterface)
 public:
@@ -48,6 +48,7 @@ public:
 	void pause();
 	void stop();
 	void seek(qint64 milliseconds);
+
 	qint32 tickInterval() const;
 	void setTickInterval(qint32 interval);
 
@@ -59,7 +60,7 @@ public:
 	Phonon::ErrorType errorType() const;
 	qint64 totalTime() const;
 	MediaSource source() const;
-	void setSource(const MediaSource &);
+	void setSource(const MediaSource & source);
 	void setNextSource(const MediaSource & source);
 
 	qint32 prefinishMark() const;
@@ -79,7 +80,7 @@ signals:
 	//void aboutToFinish()
 	//void finished();
 	//void bufferStatus(int percentFilled);
-	//void currentSourceChanged(const Phonon::MediaSource & newSource);
+	void currentSourceChanged(const MediaSource & newSource);
 	//void finished()
 	//void hasVideoChanged(bool hasVideo);
 	void metaDataChanged(const QMultiMap<QString, QString> & metaData);
@@ -89,11 +90,33 @@ signals:
 	void tick(qint64 time);
 	void totalTimeChanged(qint64 newTotalTime);
 
+signals:
+
+	//All threaded signals
+
+	void playSignalThreaded();
+	void pauseSignalThreaded();
+	void stopSignalThreaded();
+	void seekSignalThreaded(qint64 milliseconds);
+	void setSourceSignalThreaded(const MediaSource & source);
+
+private slots:
+
+	//All threaded slots
+
+	void playSlotThreaded();
+	void pauseSlotThreaded();
+	void stopSlotThreaded();
+	void seekSlotThreaded(qint64 milliseconds);
+	void setSourceSlotThreaded(const MediaSource & source);
+
 private slots:
 
 	void stateChangedInternal(Phonon::State newState);
 
 private:
+
+	void run();
 
 	void loadMediaInternal(const QString & filename);
 	void playInternal(const QString & filename);

@@ -23,6 +23,7 @@
 #include "audiooutput.h"
 
 #include "vlcloader.h"
+#include "vlc_symbols.h"
 
 #include <QtCore/QByteArray>
 #include <QtCore/QSet>
@@ -46,14 +47,13 @@ Backend::Backend(QObject * parent, const QVariantList &)
 	setProperty("backendWebsite", QLatin1String("http://multimedia.kde.org/"));
 
 	//Before everything else
-	//Create VLC instance through lazy initialization
-	VLCLoader::get();
+	initLibVLC();
 
-	qDebug() << "Using VLC version:" << VLCLoader::get().libvlc_version();
+	qDebug() << "Using VLC version:" << libvlc_version();
 }
 
 Backend::~Backend() {
-	VLCLoader::get().libvlc_release();
+	unloadLibVLC();
 }
 
 QObject * Backend::createObject(BackendInterface::Class c, QObject * parent, const QList<QVariant> & args) {
@@ -215,7 +215,7 @@ void Backend::freeSoundcardDevices() {
 
 QString Backend::toString() const {
 	return "VLC Phonon Backend by Tanguy Krotoff <tkrotoff@gmail.com>,"
-		"libvlc version=" + QString(VLCLoader::get().libvlc_version());
+		"libvlc version=" + QString(libvlc_version());
 }
 
 }}	//Namespace Phonon::VLC

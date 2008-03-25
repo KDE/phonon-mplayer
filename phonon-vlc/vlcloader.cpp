@@ -18,198 +18,60 @@
 
 #include "vlcloader.h"
 
+#include "vlc_symbols.h"
+
 #include <QtCore/QCoreApplication>
-#include <QtCore/QDir>
 #include <QtCore/QLibrary>
 #include <QtCore/QtDebug>
 
 #include <QtGui/QWidget>
-
-#include "QtCore/qt_windows.h"
 
 namespace Phonon
 {
 namespace VLC
 {
 
-//Hack, global variable
-VLCLoader * VLCLoader::_vlcLoader = NULL;
+//Global variables
+libvlc_instance_t * _instance = NULL;
+libvlc_exception_t * _exception = new libvlc_exception_t();
 
-VLCLoader::VLCLoader(QObject * parent)
-	: QObject(parent) {
+void initLibVLC() {
+	QString vlcPath(QCoreApplication::applicationDirPath());
+	QString vlcPluginsPath(vlcPath + "/plugins");
+	const char * vlcArgc[] = { vlcPath.toAscii().constData(), "--plugin-path=", vlcPluginsPath.toAscii().constData() };
 
-	_vlc = new QLibrary(this);
-	_instance = NULL;
-	_exception = new libvlc_exception_t;
+	p_libvlc_exception_init(_exception);
+
+	//Init VLC modules, should be done only once
+	_instance = p_libvlc_new(sizeof(vlcArgc) / sizeof(*vlcArgc), vlcArgc, _exception);
+	checkException();
 }
 
-VLCLoader::~VLCLoader() {
-	_vlc->unload();
-	delete _vlc;
-}
-
-VLCLoader & VLCLoader::get() {
-	//Lazy initialization
-	if (!_vlcLoader) {
-		QDir vlcPath(QCoreApplication::applicationDirPath());
-		qDebug() << "VLC path=" << vlcPath.exists() << vlcPath.path();
-		QDir vlcPluginsPath(vlcPath.path() + "/plugins");
-		qDebug() << "VLC plugins path=" << vlcPluginsPath.exists() << vlcPluginsPath.path();
-
-		QFile vlcDll(vlcPath.path() + "/libvlc-control");
-		qDebug() << "VLC .dll path=" << vlcDll.exists() << vlcDll.fileName();
-		_vlcLoader = new VLCLoader(NULL);
-		_vlcLoader->load(vlcDll.fileName());
-
-		_vlcLoader->libvlc_exception_init();
-
-		char * vlcArgc[] = { vlcPath.path().toAscii().data(), "--plugin-path=", vlcPluginsPath.path().toAscii().data() };
-
-		//Init VLC modules, should be done only once
-		_vlcLoader->libvlc_new(sizeof(vlcArgc) / sizeof(*vlcArgc), vlcArgc);
-	}
-
-	return *_vlcLoader;
-}
-
-QLibrary * VLCLoader::getVLCLib() {
-	return VLCLoader::get()._vlc;
-}
-
-libvlc_exception_t * VLCLoader::getVLCException() {
-	return VLCLoader::get()._exception;
-}
-
-void VLCLoader::checkException() {
-	if (libvlc_exception_raised()) {
-		qCritical() << "error:" << libvlc_exception_get_message();
+void checkException() {
+	if (p_libvlc_exception_raised(_exception)) {
+		qCritical() << "libvlc error:" << p_libvlc_exception_get_message(_exception);
 	}
 }
 
-bool VLCLoader::load(const QString & libname) {
-	_vlc->setFileName(libname);
-	_vlc->load();
-	if (!_vlc->isLoaded()) {
-		qCritical() << "libvlc couldn't be loaded:" << _vlc->errorString();
-		return false;
-	} else {
-		return true;
+const char * libvlc_version() {
+	static const char * version = NULL;
+
+	if (!version) {
+		QLibrary vlcOldAPI;
+		vlcOldAPI.setFileName(QCoreApplication::applicationDirPath() + "/libvlc");
+		vlcOldAPI.load();
+
+		typedef char const * (*fct) (void);
+		fct function = (fct) vlcOldAPI.resolve("VLC_Version");
+
+		if (function) {
+			version = function();
+		}
+
+		vlcOldAPI.unload();
 	}
-}
 
-const char * VLCLoader::libvlc_version() {
-	QDir vlcPath(QCoreApplication::applicationDirPath());
-	QFile vlcOldDll(vlcPath.path() + "/libvlc");
-
-	QLibrary vlcOldAPI(this);
-	vlcOldAPI.setFileName(vlcOldDll.fileName());
-	vlcOldAPI.load();
-
-	typedef char const * (*fct) (void);
-	fct function = (fct) vlcOldAPI.resolve("VLC_Version");
-	const char * version = NULL;
-	if (function) {
-		version = function();
-	}
 	return version;
-}
-
-void VLCLoader::libvlc_new(int argc, const char * const * argv) {
-	typedef libvlc_instance_t * (*fct) (int, const char * const *, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_new");
-	if (function) {
-		_instance = function(argc, argv, _exception);
-		checkException();
-	} else {
-	}
-}
-
-void VLCLoader::libvlc_exception_init() {
-	typedef void (*fct) (libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_exception_init");
-	if (function) {
-		function(_exception);
-	}
-}
-
-libvlc_media_descriptor_t * VLCLoader::libvlc_media_descriptor_new(const QString & filename) {
-	typedef libvlc_media_descriptor_t * (*fct) (libvlc_instance_t *, const char *, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_media_descriptor_new");
-	libvlc_media_descriptor_t * md = NULL;
-	if (function) {
-		md = function(_instance, filename.toAscii(), _exception);
-		checkException();
-	}
-	return md;
-}
-
-const char * VLCLoader::libvlc_exception_get_message() {
-	typedef const char * (*fct) (const libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_exception_get_message");
-	const char * msg = NULL;
-	if (function) {
-		msg = function(_exception);
-	}
-	return msg;
-}
-
-void VLCLoader::setDrawableWidget(const QWidget * widget) {
-	_drawableWidget = (int) widget->winId();
-}
-
-int VLCLoader::getDrawableWidget() const {
-	return _drawableWidget;
-}
-
-void VLCLoader::libvlc_video_set_parent(libvlc_drawable_t drawable) {
-	typedef void (*fct) (libvlc_instance_t *, libvlc_drawable_t, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_video_set_parent");
-	if (function) {
-		function(_instance, drawable, _exception);
-		checkException();
-	} else {
-	}
-}
-
-void VLCLoader::libvlc_release() {
-	typedef void (*fct) (libvlc_instance_t *);
-	fct function = (fct) _vlc->resolve("libvlc_release");
-	if (function) {
-		function(_instance);
-		checkException();
-	} else {
-	}
-}
-
-int VLCLoader::libvlc_exception_raised() {
-	typedef int (*fct) (const libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_exception_raised");
-	if (function) {
-		return function(_exception);
-	} else {
-		return 0;
-	}
-}
-
-int VLCLoader::libvlc_audio_get_volume() {
-	typedef int (*fct) (libvlc_instance_t *, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_audio_get_volume");
-	int vol = 0;
-	if (function) {
-		vol = function(_instance, _exception);
-		checkException();
-	}
-	return vol;
-}
-
-void VLCLoader::libvlc_audio_set_volume(int volume) {
-	typedef void (*fct) (libvlc_instance_t *, int, libvlc_exception_t *);
-	fct function = (fct) _vlc->resolve("libvlc_audio_set_volume");
-	if (function) {
-		function(_instance, volume, _exception);
-		checkException();
-	} else {
-	}
 }
 
 }}	//Namespace Phonon::VLC

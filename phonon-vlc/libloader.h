@@ -16,26 +16,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PHONON_VLC_VLCLOADER_H
-#define PHONON_VLC_VLCLOADER_H
+#ifndef LIBLOADER_H
+#define LIBLOADER_H
 
-#include <vlc/libvlc.h>
+class QLibrary;
 
-namespace Phonon
-{
-namespace VLC
-{
+/**
+ * Loads and resolves functions from a shared library at runtime.
+ *
+ * Inspired from Qt-4.4.0, files dbus_symbols.h and dbus_symbols.cpp
+ *
+ * @author Tanguy Krotoff
+ */
+class LibLoader {
+public:
 
-extern libvlc_instance_t * _instance;
+	LibLoader(const char * libName, const char * functionToTest);
 
-extern libvlc_exception_t * _exception;
+	~LibLoader();
 
-void checkException();
+	/**
+	 * Resolves a given function.
+	 *
+	 * @param name function to resolve
+	 * @return pointer to the function or NULL
+	 */
+	void * resolve(const char * name);
 
-const char * libvlc_version();
+private:
 
-void initLibVLC();
+	bool load();
 
-}}	//Namespace Phonon::VLC
+	QLibrary * _lib;
 
-#endif	//PHONON_VLC_VLCLOADER_H
+	const char * _libName;
+
+	const char * _functionToTest;
+};
+
+#endif	//LIBLOADER_H

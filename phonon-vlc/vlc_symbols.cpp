@@ -16,26 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PHONON_VLC_VLCLOADER_H
-#define PHONON_VLC_VLCLOADER_H
+#include "vlc_symbols.h"
 
-#include <vlc/libvlc.h>
+#include <QtCore/QCoreApplication>
 
-namespace Phonon
-{
-namespace VLC
-{
+const char * getLibVLCFilename() {
+	QString vlcDll(QCoreApplication::applicationDirPath() + "/libvlc-control");
+	return vlcDll.toAscii().constData();
+}
 
-extern libvlc_instance_t * _instance;
+static LibLoader * libVLC = new LibLoader(getLibVLCFilename(), "libvlc_exception_init");
 
-extern libvlc_exception_t * _exception;
+void * resolve(const char * name) {
+	return libVLC->resolve(name);
+}
 
-void checkException();
-
-const char * libvlc_version();
-
-void initLibVLC();
-
-}}	//Namespace Phonon::VLC
-
-#endif	//PHONON_VLC_VLCLOADER_H
+void unloadLibVLC() {
+	delete libVLC;
+	libVLC = NULL;
+}

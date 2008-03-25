@@ -27,17 +27,15 @@
 #include <QtCore/QString>
 #include <QtCore/QMultiMap>
 
-class QLibrary;
-
 namespace Phonon
 {
 namespace VLC
 {
 
 /**
- * Libvlc callbacks.
+ * Libvlc MediaObject.
  *
- * @see libvlc.h
+ * @see MediaObject
  * @author Tanguy Krotoff
  */
 class VLCMediaObject : public QObject {
@@ -82,34 +80,17 @@ private:
 	void connectToAllVLCEvents();
 
 	void updateMetaData();
-	char * libvlc_media_descriptor_get_meta(libvlc_meta_t meta);
-
-	void libvlc_media_descriptor_release();
-
-	libvlc_media_instance_t * libvlc_media_instance_new_from_media_descriptor();
-	void libvlc_media_instance_release();
-	void libvlc_media_instance_set_drawable(libvlc_drawable_t drawable);
-
-	libvlc_event_manager_t * libvlc_media_instance_event_manager();
-	libvlc_event_manager_t * libvlc_media_descriptor_event_manager();
-
-	void libvlc_event_attach(libvlc_event_manager_t * event_manager, libvlc_event_type_t event_type);
-	void libvlc_event_detach(libvlc_event_manager_t * event_manager, libvlc_event_type_t event_type);
-	const char * libvlc_event_type_name(libvlc_event_type_t event_type);
 
 	static void libvlc_callback(const libvlc_event_t * event, void * user_data);
-
-	void checkException() const;
-
-	QLibrary * _vlc;
-
-	libvlc_exception_t * _exception;
 
 	libvlc_media_instance_t * _mediaInstance;
 	libvlc_event_manager_t * _mediaInstanceEventManager;
 
 	libvlc_media_descriptor_t * _mediaDescriptor;
 	libvlc_event_manager_t * _mediaDescriptorEventManager;
+
+	libvlc_media_list_t * _mediaList;
+	libvlc_event_manager_t * _mediaListEventManager;
 };
 
 }}	//Namespace Phonon::VLC

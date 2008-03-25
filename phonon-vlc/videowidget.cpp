@@ -19,6 +19,7 @@
 #include "videowidget.h"
 
 #include "vlcloader.h"
+#include "vlc_symbols.h"
 
 #include <QtGui/QWidget>
 
@@ -32,8 +33,7 @@ VideoWidget::VideoWidget(QWidget * parent)
 
 	_widget = new QWidget(parent);
 
-	VLCLoader::get().setDrawableWidget(_widget);
-	VLCLoader::get().libvlc_video_set_parent(VLCLoader::get().getDrawableWidget());
+	p_libvlc_video_set_parent(_instance, (int) _widget->winId(), _exception);
 }
 
 VideoWidget::~VideoWidget() {

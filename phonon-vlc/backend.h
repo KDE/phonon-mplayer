@@ -32,8 +32,6 @@ namespace Phonon
 namespace VLC
 {
 
-class VLCLoader;
-
 /**
  * VLC backend class.
  *
@@ -63,14 +61,6 @@ public:
 	bool connectNodes(QObject *, QObject *);
 	bool disconnectNodes(QObject *, QObject *);
 	bool endConnectionChange(QSet<QObject *>);
-
-	/**
-	 * Internal.
-	 * Ugly hack to get VLCLoader accessible from everywhere.
-	 *
-	 * Global variable.
-	 */
-	static VLCLoader * getVLCLoader();
 
 public slots:
 
