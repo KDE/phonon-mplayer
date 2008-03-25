@@ -83,7 +83,6 @@ private:
 
 	static void libvlc_callback(const libvlc_event_t * event, void * user_data);
 
-	libvlc_media_instance_t * _mediaInstance;
 	libvlc_event_manager_t * _mediaInstanceEventManager;
 
 	libvlc_media_descriptor_t * _mediaDescriptor;

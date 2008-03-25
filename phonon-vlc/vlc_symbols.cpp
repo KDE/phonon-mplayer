@@ -18,17 +18,27 @@
 
 #include "vlc_symbols.h"
 
+#include "libloader.h"
+
 #include <QtCore/QCoreApplication>
 
-const char * getLibVLCFilename() {
+static LibLoader * libVLC = NULL;
+
+QString getLibVLCFilename() {
 	QString vlcDll(QCoreApplication::applicationDirPath() + "/libvlc-control");
-	return vlcDll.toAscii().constData();
+	return vlcDll;
 }
 
-static LibLoader * libVLC = new LibLoader(getLibVLCFilename(), "libvlc_exception_init");
-
 void * resolve(const char * name) {
-	return libVLC->resolve(name);
+	static volatile bool triedToLoadLibrary = false;
+
+	LibLoader *&lib = libVLC;
+	if (!triedToLoadLibrary) {
+		lib = new LibLoader(getLibVLCFilename().toAscii(), "libvlc_exception_init");
+		triedToLoadLibrary = true;
+	}
+
+	return lib->resolve(name);
 }
 
 void unloadLibVLC() {

@@ -19,8 +19,6 @@
 #ifndef VLC_SYMBOLS_H
 #define VLC_SYMBOLS_H
 
-#include "libloader.h"
-
 #include <vlc/libvlc.h>
 
 /**
@@ -36,22 +34,20 @@ void unloadLibVLC();
 #define DEFINEFUNC(ret, func, args, argcall, funcret)		\
 	typedef ret (* _p_PTR_##func) args;			\
 	static inline ret p_##func args {			\
-		static _p_PTR_##func ptr;			\
-		if (!ptr) {					\
-			ptr = (_p_PTR_##func) resolve(#func);	\
-			funcret ptr argcall;			\
-		}						\
+		_p_PTR_##func ptr = 0;				\
+		ptr = (_p_PTR_##func) resolve(#func);		\
+		funcret ptr argcall;				\
 	}
 
 /*
-	typedef int (* _p_PTR_libvlc_exception_raised) (const libvlc_exception_t * p_e);
+Macro expanded:
 
-	static inline _p_PTR_libvlc_exception_raised p_libvlc_exception_raised(const libvlc_exception_t * p_e) {
-		static _p_PTR_libvlc_exception_raised ptr;
-		if (!ptr) {
-			ptr = (_p_PTR_libvlc_exception_raised) resolve("libvlc_exception_raised");
-			return ptr(p_e);
-		}
+	typedef const char * (* _p_PTR_libvlc_exception_get_message) (const libvlc_exception_t * p_e);
+
+	static inline const char * p_libvlc_exception_get_message(const libvlc_exception_t * p_e) {
+		_p_PTR_libvlc_exception_get_message ptr = 0;
+		ptr = (_p_PTR_libvlc_exception_get_message) resolve("libvlc_exception_get_message");
+		return ptr(p_e);
 	}
 */
 

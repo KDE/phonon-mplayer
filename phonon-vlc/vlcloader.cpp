@@ -26,16 +26,19 @@
 
 #include <QtGui/QWidget>
 
+libvlc_instance_t * _instance = NULL;
+libvlc_exception_t * _exception = new libvlc_exception_t();
+
 namespace Phonon
 {
 namespace VLC
 {
 
-//Global variables
-libvlc_instance_t * _instance = NULL;
-libvlc_exception_t * _exception = new libvlc_exception_t();
-
 void initLibVLC() {
+	//Global variables
+	_instance = NULL;
+	_exception = new libvlc_exception_t();
+
 	QString vlcPath(QCoreApplication::applicationDirPath());
 	QString vlcPluginsPath(vlcPath + "/plugins");
 	const char * vlcArgc[] = { vlcPath.toAscii().constData(), "--plugin-path=", vlcPluginsPath.toAscii().constData() };
@@ -49,7 +52,7 @@ void initLibVLC() {
 
 void checkException() {
 	if (p_libvlc_exception_raised(_exception)) {
-		qCritical() << "libvlc error:" << p_libvlc_exception_get_message(_exception);
+		qDebug() << "libvlc exception:" << p_libvlc_exception_get_message(_exception);
 	}
 }
 

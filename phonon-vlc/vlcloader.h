@@ -21,14 +21,16 @@
 
 #include <vlc/libvlc.h>
 
+extern libvlc_instance_t * _instance;
+
+extern libvlc_exception_t * _exception;
+
+extern libvlc_media_instance_t * _mediaInstance;
+
 namespace Phonon
 {
 namespace VLC
 {
-
-extern libvlc_instance_t * _instance;
-
-extern libvlc_exception_t * _exception;
 
 void checkException();
 

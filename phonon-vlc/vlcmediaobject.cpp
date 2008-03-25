@@ -23,6 +23,8 @@
 
 #include <QtCore/QtDebug>
 
+libvlc_media_instance_t * _mediaInstance = NULL;
+
 namespace Phonon
 {
 namespace VLC
@@ -93,8 +95,11 @@ void VLCMediaObject::seek(qint64 milliseconds) {
 }
 
 Phonon::State VLCMediaObject::state() const {
-	libvlc_state_t st = p_libvlc_media_instance_get_state(_mediaInstance, _exception);
-	checkException();
+	libvlc_state_t st = libvlc_Stopped;
+	if (_mediaInstance) {
+		st = p_libvlc_media_instance_get_state(_mediaInstance, _exception);
+		checkException();
+	}
 
 	Phonon::State state;
 
@@ -213,6 +218,10 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 
 	qDebug() << "event=" << (int) vlcMediaObject << p_libvlc_event_type_name(event->type);
 
+	if (event->type == libvlc_MediaInstancePositionChanged) {
+		qDebug() << "new_position=" << event->u.media_instance_position_changed.new_position;
+	}
+
 	if (event->type == libvlc_MediaInstanceTimeChanged) {
 		//new_time / VLC_POSITION_RESOLUTION since VLC adds * VLC_POSITION_RESOLUTION, don't know why...
 		qDebug() << "new_time=" << event->u.media_instance_time_changed.new_time;
@@ -308,10 +317,14 @@ void VLCMediaObject::updateMetaData() {
 }
 
 qint64 VLCMediaObject::totalTime() const {
-	libvlc_time_t t = p_libvlc_media_instance_get_length(_mediaInstance, _exception);
-	checkException();
+	libvlc_time_t time = 0;
 
-	return t;
+	if (_mediaInstance) {
+		time = p_libvlc_media_instance_get_length(_mediaInstance, _exception);
+		checkException();
+	}
+
+	return time;
 }
 
 qint64 VLCMediaObject::currentTime() const {
