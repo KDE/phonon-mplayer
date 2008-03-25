@@ -115,11 +115,6 @@ void MainWindow::addFiles() {
 	if (!_mediaSources.isEmpty()) {
 		_metaObjectInfoResolver->setCurrentSource(_mediaSources.at(index));
 	}
-
-	///
-	_mediaObject->setCurrentSource(_mediaSources[0]);
-	_mediaObject->play();
-	///
 }
 
 void MainWindow::openDVD() {
@@ -150,7 +145,6 @@ void MainWindow::stateChanged(Phonon::State newState, Phonon::State oldState) {
 	case Phonon::PlayingState:
 		qDebug() << "PlayingState newState=" << newState << "oldState=" << oldState;
 
-		//_videoWidget->enterFullScreen();
 		actionPlay->setEnabled(false);
 		actionPause->setEnabled(true);
 		actionStop->setEnabled(true);
@@ -159,7 +153,6 @@ void MainWindow::stateChanged(Phonon::State newState, Phonon::State oldState) {
 	case Phonon::StoppedState:
 		qDebug() << "StoppedState newState=" << newState << "oldState=" << oldState;
 
-		//_videoWidget->exitFullScreen();
 		actionStop->setEnabled(false);
 		actionPlay->setEnabled(true);
 		actionPause->setEnabled(false);
@@ -217,6 +210,8 @@ void MainWindow::sourceChanged(const Phonon::MediaSource & source) {
 }
 
 void MainWindow::metaStateChanged(Phonon::State newState, Phonon::State oldState) {
+	qDebug() << "metaStateChanged";
+
 	if (newState == Phonon::ErrorState) {
 		QMessageBox::warning(this, tr("Error opening files"),
 				_metaObjectInfoResolver->errorString());
