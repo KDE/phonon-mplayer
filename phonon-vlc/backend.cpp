@@ -53,7 +53,7 @@ Backend::Backend(QObject * parent, const QVariantList &)
 }
 
 Backend::~Backend() {
-	unloadLibVLC();
+	releaseLibVLC();
 }
 
 QObject * Backend::createObject(BackendInterface::Class c, QObject * parent, const QList<QVariant> & args) {

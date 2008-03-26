@@ -35,15 +35,19 @@ AudioOutput::~AudioOutput() {
 
 qreal AudioOutput::volume() const {
 	qreal volume = 0;
-	if (_mediaInstance) {
-		volume = p_libvlc_audio_get_volume(_instance, _exception) / 100;
+
+	//FIXME we have to check first for _vlcMediaInstance
+	//libvlc_audio_get_volume() does not work otherwise
+	//this is a missing feature inside libvlc!!!
+	if (_vlcMediaInstance) {
+		volume = p_libvlc_audio_get_volume(_vlcInstance, _vlcException) / 100;
 		checkException();
 	}
 	return volume;
 }
 
 void AudioOutput::setVolume(qreal volume) {
-	p_libvlc_audio_set_volume(_instance, volume * 100, _exception);
+	p_libvlc_audio_set_volume(_vlcInstance, volume * 100, _vlcException);
 	checkException();
 }
 

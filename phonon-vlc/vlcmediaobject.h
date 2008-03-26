@@ -35,6 +35,9 @@ namespace VLC
 /**
  * Libvlc MediaObject.
  *
+ * Encapsulates vlc MediaObject specific code.
+ * Take care of libvlc events via libvlc_callback()
+ *
  * @see MediaObject
  * @author Tanguy Krotoff
  */
@@ -77,19 +80,50 @@ signals:
 
 private:
 
+	/**
+	 * Connects libvlc_callback() to all vlc events.
+	 *
+	 * @see libvlc_callback()
+	 */
 	void connectToAllVLCEvents();
 
+	/**
+	 * Retrieves (i.e ARTIST, TITLE, ALBUM...) meta data of a file.
+	 */
 	void updateMetaData();
 
+	/**
+	 * Libvlc callback.
+	 *
+	 * Receives all vlc events.
+	 *
+	 * @see connectToAllVLCEvents()
+	 * @see libvlc_event_attach()
+	 */
 	static void libvlc_callback(const libvlc_event_t * event, void * user_data);
 
-	libvlc_event_manager_t * _mediaInstanceEventManager;
+	//MediaInstance
+	libvlc_event_manager_t * _vlcMediaInstanceEventManager;
 
-	libvlc_media_descriptor_t * _mediaDescriptor;
-	libvlc_event_manager_t * _mediaDescriptorEventManager;
+	//MediaDescriptor
+	libvlc_media_descriptor_t * _vlcMediaDescriptor;
+	libvlc_event_manager_t * _vlcMediaDescriptorEventManager;
 
-	libvlc_media_list_t * _mediaList;
-	libvlc_event_manager_t * _mediaListEventManager;
+	//MediaList
+	libvlc_media_list_t * _vlcMediaList;
+	libvlc_event_manager_t * _vlcMediaListEventManager;
+
+	//MediaListView
+	libvlc_media_list_view_t * _vlcMediaListView;
+	libvlc_event_manager_t * _vlcMediaListViewEventManager;
+
+	//MediaListPlayer
+	libvlc_media_list_player_t * _vlcMediaListPlayer;
+	libvlc_event_manager_t * _vlcMediaListPlayerEventManager;
+
+	//MediaDiscoverer
+	libvlc_media_discoverer_t * _vlcMediaDiscoverer;
+	libvlc_event_manager_t * _vlcMediaDiscovererEventManager;
 };
 
 }}	//Namespace Phonon::VLC

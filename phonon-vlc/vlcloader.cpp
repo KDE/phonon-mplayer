@@ -26,8 +26,10 @@
 
 #include <QtGui/QWidget>
 
-libvlc_instance_t * _instance = NULL;
-libvlc_exception_t * _exception = new libvlc_exception_t();
+libvlc_instance_t * _vlcInstance = NULL;
+libvlc_exception_t * _vlcException = new libvlc_exception_t();
+libvlc_media_instance_t * _vlcMediaInstance = NULL;
+libvlc_drawable_t _vlcMediaInstanceWidgetId = 0;
 
 namespace Phonon
 {
@@ -36,23 +38,28 @@ namespace VLC
 
 void initLibVLC() {
 	//Global variables
-	_instance = NULL;
-	_exception = new libvlc_exception_t();
+	_vlcInstance = NULL;
+	_vlcException = new libvlc_exception_t();
 
 	QString vlcPath(QCoreApplication::applicationDirPath());
 	QString vlcPluginsPath(vlcPath + "/plugins");
 	const char * vlcArgc[] = { vlcPath.toAscii().constData(), "--plugin-path=", vlcPluginsPath.toAscii().constData() };
 
-	p_libvlc_exception_init(_exception);
+	p_libvlc_exception_init(_vlcException);
 
 	//Init VLC modules, should be done only once
-	_instance = p_libvlc_new(sizeof(vlcArgc) / sizeof(*vlcArgc), vlcArgc, _exception);
+	_vlcInstance = p_libvlc_new(sizeof(vlcArgc) / sizeof(*vlcArgc), vlcArgc, _vlcException);
 	checkException();
 }
 
+void releaseLibVLC() {
+	p_libvlc_release(_vlcInstance);
+	unloadLibVLC();
+}
+
 void checkException() {
-	if (p_libvlc_exception_raised(_exception)) {
-		qDebug() << "libvlc exception:" << p_libvlc_exception_get_message(_exception);
+	if (p_libvlc_exception_raised(_vlcException)) {
+		qDebug() << "libvlc exception:" << p_libvlc_exception_get_message(_vlcException);
 	}
 }
 
@@ -60,6 +67,7 @@ const char * libvlc_version() {
 	static const char * version = NULL;
 
 	if (!version) {
+		//Uses libvlc old API, there no libvlc_get_version() is the new API
 		QLibrary vlcOldAPI;
 		vlcOldAPI.setFileName(QCoreApplication::applicationDirPath() + "/libvlc");
 		vlcOldAPI.load();

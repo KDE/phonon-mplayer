@@ -21,22 +21,50 @@
 
 #include <vlc/libvlc.h>
 
-extern libvlc_instance_t * _instance;
+/** Libvlc instance global variable. */
+extern libvlc_instance_t * _vlcInstance;
 
-extern libvlc_exception_t * _exception;
+/** Libvlc exception handling global variable. */
+extern libvlc_exception_t * _vlcException;
 
-extern libvlc_media_instance_t * _mediaInstance;
+/** Libvlc media instance global variable. */
+extern libvlc_media_instance_t * _vlcMediaInstance;
+
+/** Libvlc widget id global variable, where vlc will show images/movies. */
+extern libvlc_drawable_t _vlcMediaInstanceWidgetId;
 
 namespace Phonon
 {
 namespace VLC
 {
 
+/**
+ * Checks for a libvlc exception.
+ *
+ * If a libvlc exception has been raised, shows an error message.
+ */
 void checkException();
 
+/**
+ * Gets libvlc version string.
+ *
+ * Example: 0.9.0-git-20080322-003 Grishenko
+ *
+ * @return libvlc version string
+ */
 const char * libvlc_version();
 
+/**
+ * Launch and initialize libvlc.
+ *
+ * _instance and _exception global variables are initialized.
+ */
 void initLibVLC();
+
+/**
+ * Stops libvlc.
+ */
+void releaseLibVLC();
 
 }}	//Namespace Phonon::VLC
 
