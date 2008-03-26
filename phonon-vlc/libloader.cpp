@@ -22,8 +22,8 @@
 
 LibLoader::LibLoader(const char * libName, const char * functionToTest) {
 	_lib = NULL;
-	_libName = libName;
-	_functionToTest = functionToTest;
+	_libName = strdup(libName);
+	_functionToTest = strdup(functionToTest);
 
 	if (!load()) {
 		qFatal("Cannot find '%s' on your system, error msg='%s'", _libName, _lib->errorString());
@@ -32,7 +32,6 @@ LibLoader::LibLoader(const char * libName, const char * functionToTest) {
 
 LibLoader::~LibLoader() {
 	delete _lib;
-	_lib = NULL;
 }
 
 bool LibLoader::load() {
@@ -51,7 +50,7 @@ bool LibLoader::load() {
 	}
 
 	delete _lib;
-	_lib = NULL;
+
 	return false;
 }
 

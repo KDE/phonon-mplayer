@@ -31,6 +31,9 @@ void * resolve(const char * name);
  */
 void unloadLibVLC();
 
+/**
+ * Macro inspired from Qt-4.4.0, files dbus_symbols.h and dbus_symbols.cpp
+ */
 #define DEFINEFUNC(ret, func, args, argcall, funcret)		\
 	typedef ret (* _p_PTR_##func) args;			\
 	static inline ret p_##func args {			\
