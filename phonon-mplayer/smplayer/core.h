@@ -20,7 +20,7 @@
 #define _CORE_H_
 
 #include <QObject>
-
+#include <QProcess> // For QProcess::ProcessError
 #include "mediadata.h"
 #include "mediasettings.h"
 #include "config.h"
@@ -93,7 +93,7 @@ public slots:
 	void restart();
 
     void goToPos( int perc );
-    /*void goToSec( double sec );*/
+    void goToSec( double sec );
 
 	void toggleRepeat();
 	void toggleRepeat(bool b);
@@ -207,6 +207,8 @@ public slots:
 	void toggleDoubleSize();
 	void changePanscan(double); // Zoom on mplayerwindow
 
+	void changeRotate(int r);
+
 	void incPanscan();
 	void decPanscan();
 	void resetPanscan();
@@ -224,6 +226,7 @@ public:
 	//! Returns the number of the first chapter in mkv
 	//! files. In some versions of mplayer is 0, in others 1
 	static int mkv_first_chapter();
+	static int dvd_first_chapter();
 
 protected slots:
     void changeCurrentSec(double sec);
@@ -289,9 +292,14 @@ signals:
 	void showTime(double sec);
 	void showFrame(int frame);
 	void needResize(int w, int h);
-	void mplayerFinishedWithError(int);
 	void noVideo();
 	void volumeChanged(int);
+
+	//! MPlayer started but finished with exit code != 0
+	void mplayerFinishedWithError(int exitCode);
+
+	//! MPlayer didn't started or crashed
+	void mplayerFailed(QProcess::ProcessError error);
 
 	// Resend signal from mplayerprocess:
 	void failedToParseMplayerVersion(QString line_with_mplayer_version);
