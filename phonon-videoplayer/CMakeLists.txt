@@ -22,22 +22,22 @@ qt4_wrap_ui(videoplayer_SRCS
 )
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_definitions(
-	-DUNICODE
-	-DWIN32
-	-DQT_LARGEFILE_SUPPORT
-	-DQT_DLL
-	#-DQT_NO_DEBUG
-	-DQT_PHONON_LIB
-	-DQT_GUI_LIB
-	-DQT_CORE_LIB
-	-DQT_THREAD_SUPPORT
-)
-
 add_executable(videoplayer ${videoplayer_SRCS})
 
+if (UNIX)
+	set(QT_PHONON_LIBRARY_DEBUG
+		${QT_LIBRARY_DIR}/libphonon.so.4.1.0.debug
+	)
+endif (UNIX)
+
+if (WIN32)
+	set(QT_PHONON_LIBRARY_DEBUG
+		${QT_LIBRARY_DIR}/phonond4
+	)
+endif (WIN32)
+
 target_link_libraries(videoplayer
-	${QT_QTCORE_LIBRARY}
-	${QT_QTGUI_LIBRARY}
-	${QT_LIBRARY_DIR}/phonond4.lib
+	${QT_QTCORE_LIBRARY_DEBUG}
+	${QT_QTGUI_LIBRARY_DEBUG}
+	${QT_PHONON_LIBRARY_DEBUG}
 )

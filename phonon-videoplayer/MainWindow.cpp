@@ -115,6 +115,9 @@ void MainWindow::addFiles() {
 	if (!_mediaSources.isEmpty()) {
 		_metaObjectInfoResolver->setCurrentSource(_mediaSources.at(index));
 	}
+
+	_mediaObject->setCurrentSource(_mediaSources[0]);
+	_mediaObject->play();
 }
 
 void MainWindow::openDVD() {
