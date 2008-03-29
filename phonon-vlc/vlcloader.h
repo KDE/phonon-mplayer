@@ -46,15 +46,6 @@ namespace VLC
 void checkException();
 
 /**
- * Gets libvlc version string.
- *
- * Example: 0.9.0-git-20080322-003 Grishenko
- *
- * @return libvlc version string
- */
-const char * libvlc_version();
-
-/**
  * Launch and initialize libvlc.
  *
  * _instance and _exception global variables are initialized.

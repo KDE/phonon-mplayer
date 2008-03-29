@@ -21,11 +21,41 @@
 #include "libloader.h"
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QtDebug>
 
 static LibLoader * libVLC = NULL;
 
+QString getVLCPath() {
+#ifdef Q_OS_WIN
+	QString vlcPath(QCoreApplication::applicationDirPath());
+#endif	//Q_OS_WIN
+
+#ifdef Q_OS_LINUX
+	QString vlcPath("/usr/local/lib");
+#endif	//Q_OS_LINUX
+
+	return vlcPath;
+}
+
+QString getVLCPluginsPath() {
+	QString vlcPath = getVLCPath();
+	qDebug() << "VLC Path:" << vlcPath;
+
+#ifdef Q_OS_WIN
+	QString vlcPluginsPath(vlcPath + "/plugins");
+#endif	//Q_OS_WIN
+
+#ifdef Q_OS_LINUX
+	QString vlcPluginsPath(vlcPath + "/vlc");
+#endif	//Q_OS_LINUX
+
+	qDebug() << "VLC Plugins Path:" << vlcPluginsPath;
+
+	return vlcPluginsPath;
+}
+
 QString getLibVLCFilename() {
-	QString vlcDll(QCoreApplication::applicationDirPath() + "/libvlc-control");
+	QString vlcDll(getVLCPath() + "/libvlc-control");
 	return vlcDll;
 }
 

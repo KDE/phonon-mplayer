@@ -21,15 +21,21 @@
 
 #include <vlc/libvlc.h>
 
-/**
- * Internal, resolves a libvlc function name.
- */
-void * resolve(const char * name);
+#include <QtCore/QString>
+
+QString getVLCPath();
+
+QString getVLCPluginsPath();
 
 /**
  * Unloads libvlc.
  */
 void unloadLibVLC();
+
+/**
+ * Internal, resolves a libvlc function name.
+ */
+void * resolve(const char * name);
 
 /**
  * Macro inspired from Qt-4.4.0, files dbus_symbols.h and dbus_symbols.cpp
@@ -75,6 +81,12 @@ DEFINEFUNC(int, libvlc_get_vlc_id, (libvlc_instance_t * p_i), (p_i), return)
 DEFINEFUNC(void, libvlc_release, (libvlc_instance_t * p_i), (p_i), )
 
 DEFINEFUNC(void, libvlc_retain, (libvlc_instance_t * p_i), (p_i), )
+
+DEFINEFUNC(const char *, libvlc_get_version, (), (), return)
+
+DEFINEFUNC(const char *, libvlc_get_compiler, (), (), return)
+
+DEFINEFUNC(const char *, libvlc_get_changeset, (), (), return)
 
 DEFINEFUNC(libvlc_media_descriptor_t *, libvlc_media_descriptor_new, (
 				libvlc_instance_t * p_i,

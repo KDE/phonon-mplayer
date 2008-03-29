@@ -49,7 +49,7 @@ Backend::Backend(QObject * parent, const QVariantList &)
 	//Before everything else
 	initLibVLC();
 
-	qDebug() << "Using VLC version:" << libvlc_version();
+	qDebug() << "Using VLC version:" << p_libvlc_get_version();
 }
 
 Backend::~Backend() {
@@ -214,8 +214,9 @@ void Backend::freeSoundcardDevices() {
 }
 
 QString Backend::toString() const {
-	return "VLC Phonon Backend by Tanguy Krotoff <tkrotoff@gmail.com>,"
-		"libvlc version=" + QString(libvlc_version());
+	return "VLC Phonon Backend by Tanguy Krotoff <tkrotoff@gmail.com>\n"
+		"libvlc version=" + QString(p_libvlc_get_version()) + "\n"
+		"libvlc changeset=" + QString(p_libvlc_get_changeset());
 }
 
 }}	//Namespace Phonon::VLC

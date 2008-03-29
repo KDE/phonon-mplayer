@@ -30,14 +30,26 @@ qt4_wrap_cpp(phonon_vlc_SRCS
 
 add_library(phonon_vlc MODULE ${phonon_vlc_SRCS})
 
+if (UNIX)
+	set(QT_PHONON_LIBRARY_DEBUG
+		${QT_LIBRARY_DIR}/libphonon.so.4.1.0.debug
+	)
+endif (UNIX)
+
+if (WIN32)
+	set(QT_PHONON_LIBRARY_DEBUG
+		${QT_LIBRARY_DIR}/phonond4
+	)
+endif (WIN32)
+
 target_link_libraries(phonon_vlc
-	${QT_QTCORE_LIBRARY}
-	${QT_LIBRARY_DIR}/phonond4.lib
-	${QT_QTGUI_LIBRARY}
+	${QT_QTCORE_LIBRARY_DEBUG}
+	${QT_PHONON_LIBRARY_DEBUG}
+	${QT_QTGUI_LIBRARY_DEBUG}
 )
 
 install(TARGETS phonon_vlc
-	RUNTIME DESTINATION "C:/Qt/4.4.0/plugins/phonon_backend"
-	LIBRARY DESTINATION "C:/Qt/4.4.0/plugins/phonon_backend"
-	ARCHIVE DESTINATION "C:/Qt/4.4.0/plugins/phonon_backend"
+	RUNTIME DESTINATION ${QT_PLUGINS_DIR}/phonon_backend
+	LIBRARY DESTINATION ${QT_PLUGINS_DIR}/phonon_backend
+	ARCHIVE DESTINATION ${QT_PLUGINS_DIR}/phonon_backend
 )

@@ -41,9 +41,7 @@ void initLibVLC() {
 	_vlcInstance = NULL;
 	_vlcException = new libvlc_exception_t();
 
-	QString vlcPath(QCoreApplication::applicationDirPath());
-	QString vlcPluginsPath(vlcPath + "/plugins");
-	const char * vlcArgc[] = { vlcPath.toAscii().constData(), "--plugin-path=", vlcPluginsPath.toAscii().constData() };
+	const char * vlcArgc[] = { getVLCPath().toAscii().constData(), "--plugin-path=", getVLCPluginsPath().toAscii().constData() };
 
 	p_libvlc_exception_init(_vlcException);
 
@@ -61,28 +59,6 @@ void checkException() {
 	if (p_libvlc_exception_raised(_vlcException)) {
 		qDebug() << "libvlc exception:" << p_libvlc_exception_get_message(_vlcException);
 	}
-}
-
-const char * libvlc_version() {
-	static const char * version = NULL;
-
-	if (!version) {
-		//Uses libvlc old API, there no libvlc_get_version() is the new API
-		QLibrary vlcOldAPI;
-		vlcOldAPI.setFileName(QCoreApplication::applicationDirPath() + "/libvlc");
-		vlcOldAPI.load();
-
-		typedef char const * (*fct) (void);
-		fct function = (fct) vlcOldAPI.resolve("VLC_Version");
-
-		if (function) {
-			version = function();
-		}
-
-		vlcOldAPI.unload();
-	}
-
-	return version;
 }
 
 }}	//Namespace Phonon::VLC
