@@ -50,12 +50,15 @@ bool LibLoader::load() {
 		_lib->unload();
 	}
 
-	delete _lib;
-
 	return false;
 }
 
 void * LibLoader::resolve(const char * name) {
+	if (!_lib->isLoaded()) {
+		qWarning() << "Library:" << _libName << "not loaded";
+		return NULL;
+	}
+
 	void * func = _lib->resolve(name);
 	if (!func) {
 		qWarning() << "Cannot resolve:" << name << "in library:" << _libName;
