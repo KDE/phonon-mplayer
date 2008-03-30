@@ -33,8 +33,8 @@ VideoWidget::VideoWidget(QWidget * parent)
 
 	_widget = new QWidget(parent);
 
-	_vlcMediaInstanceWidgetId = (int) _widget->winId();
-	p_libvlc_video_set_parent(_vlcInstance, _vlcMediaInstanceWidgetId, _vlcException);
+	_vlcMediaPlayerWidgetId = (int) _widget->winId();
+	p_libvlc_video_set_parent(_vlcInstance, _vlcMediaPlayerWidgetId, _vlcException);
 }
 
 VideoWidget::~VideoWidget() {

@@ -88,105 +88,84 @@ DEFINEFUNC(const char *, libvlc_get_compiler, (), (), return)
 
 DEFINEFUNC(const char *, libvlc_get_changeset, (), (), return)
 
-DEFINEFUNC(libvlc_media_descriptor_t *, libvlc_media_descriptor_new, (
+DEFINEFUNC(libvlc_media_t *, libvlc_media_new, (
 				libvlc_instance_t * p_i,
 				const char * psz_mrl,
 				libvlc_exception_t * p_e),
 				(p_i, psz_mrl, p_e), return)
 
-DEFINEFUNC(libvlc_media_descriptor_t *, libvlc_media_descriptor_new_as_node, (
+DEFINEFUNC(libvlc_media_t *, libvlc_media_new_as_node, (
 				libvlc_instance_t * p_i,
 				const char * psz_name,
 				libvlc_exception_t * p_e),
 				(p_i, psz_name, p_e), return)
 
-DEFINEFUNC(void, libvlc_media_descriptor_add_option, (
-				libvlc_media_descriptor_t * p_md,
+DEFINEFUNC(void, libvlc_media_add_option, (
+				libvlc_media_t * p_md,
 				const char * ppsz_options,
 				libvlc_exception_t * p_e),
 				(p_md, ppsz_options, p_e), )
 
-DEFINEFUNC(void, libvlc_media_descriptor_retain, (
-				libvlc_media_descriptor_t * p_md),
+DEFINEFUNC(void, libvlc_media_retain, (
+				libvlc_media_t * p_md),
 				(p_md), )
 
-DEFINEFUNC(void, libvlc_media_descriptor_release, (
-				libvlc_media_descriptor_t * p_md),
+DEFINEFUNC(void, libvlc_media_release, (
+				libvlc_media_t * p_md),
 				(p_md), )
 
-DEFINEFUNC(char *, libvlc_media_descriptor_get_mrl, (
-						libvlc_media_descriptor_t * p_md,
+DEFINEFUNC(char *, libvlc_media_get_mrl, (
+						libvlc_media_t * p_md,
 						libvlc_exception_t * p_e),
 						(p_md, p_e), return)
 
-DEFINEFUNC(libvlc_media_descriptor_t *, libvlc_media_descriptor_duplicate, (libvlc_media_descriptor_t * p_md), (p_md), return)
+DEFINEFUNC(libvlc_media_t *, libvlc_media_duplicate, (libvlc_media_t * p_md), (p_md), return)
 
-DEFINEFUNC(char *, libvlc_media_descriptor_get_meta, (
-				libvlc_media_descriptor_t * p_md,
+DEFINEFUNC(char *, libvlc_media_get_meta, (
+				libvlc_media_t * p_md,
 				libvlc_meta_t e_meta,
 				libvlc_exception_t * p_e),
 				(p_md, e_meta, p_e), return)
 
-DEFINEFUNC(libvlc_state_t, libvlc_media_descriptor_get_state, (
-				libvlc_media_descriptor_t * p_md,
+DEFINEFUNC(libvlc_state_t, libvlc_media_get_state, (
+				libvlc_media_t * p_md,
 				libvlc_exception_t * p_e),
 				(p_md, p_e), return)
 
-DEFINEFUNC(void, libvlc_media_descriptor_add_tag, (
-						libvlc_media_descriptor_t * p_md,
-						const char * key,
-						const libvlc_tag_t tag,
-						libvlc_exception_t * p_e),
-						(p_md, key, tag, p_e), )
-
-DEFINEFUNC(void, libvlc_media_descriptor_remove_tag, (
-							libvlc_media_descriptor_t * p_md,
-							const char * key,
-							const libvlc_tag_t tag,
-							libvlc_exception_t * p_e),
-							(p_md, key, tag, p_e), )
-
-DEFINEFUNC(int, libvlc_media_descriptor_tags_count_for_key, (
-						libvlc_media_descriptor_t * p_md,
+DEFINEFUNC(int, libvlc_media_tags_count_for_key, (
+						libvlc_media_t * p_md,
 						const char * key,
 						libvlc_exception_t * p_e),
 						(p_md, key, p_e), return)
 
-DEFINEFUNC(libvlc_tag_t, libvlc_media_descriptor_tag_at_index_for_key, (
-						libvlc_media_descriptor_t * p_md,
-						int i,
-						const char * key,
-						libvlc_exception_t * p_e),
-						(p_md, i, key, p_e), return)
-
-DEFINEFUNC(libvlc_media_list_t *, libvlc_media_descriptor_subitems, (
-				libvlc_media_descriptor_t * p_md,
+DEFINEFUNC(libvlc_media_list_t *, libvlc_media_subitems, (
+				libvlc_media_t * p_md,
 				libvlc_exception_t * p_e),
 				(p_md, p_e), return)
 
-DEFINEFUNC(libvlc_event_manager_t *, libvlc_media_descriptor_event_manager, (
-					libvlc_media_descriptor_t * p_md,
+DEFINEFUNC(libvlc_event_manager_t *, libvlc_media_event_manager, (
+					libvlc_media_t * p_md,
 					libvlc_exception_t * p_e),
 					(p_md, p_e), return)
 
-DEFINEFUNC(libvlc_time_t, libvlc_media_descriptor_get_duration, (
-					libvlc_media_descriptor_t * p_md,
+DEFINEFUNC(libvlc_time_t, libvlc_media_get_duration, (
+					libvlc_media_t * p_md,
 					libvlc_exception_t * p_e),
 					(p_md, p_e), return)
 
-DEFINEFUNC(int, libvlc_media_descriptor_is_preparsed, (
-					libvlc_media_descriptor_t * p_md,
+DEFINEFUNC(int, libvlc_media_is_preparsed, (
+					libvlc_media_t * p_md,
 					libvlc_exception_t * p_e),
 					(p_md, p_e), return)
 
-DEFINEFUNC(void, libvlc_media_descriptor_set_user_data, (
-					libvlc_media_descriptor_t * p_md,
+DEFINEFUNC(void, libvlc_media_set_user_data, (
+					libvlc_media_t * p_md,
 					void * p_new_user_data,
 					libvlc_exception_t * p_e),
 					(p_md, p_new_user_data, p_e), )
 
-DEFINEFUNC(void *, libvlc_media_descriptor_get_user_data, (
-					libvlc_media_descriptor_t * p_md,
+DEFINEFUNC(void *, libvlc_media_get_user_data, (
+					libvlc_media_t * p_md,
 					libvlc_exception_t * p_e),
 					(p_md, p_e), return)
 
@@ -255,98 +234,80 @@ DEFINEFUNC(int, libvlc_playlist_delete_item, (
 						libvlc_exception_t * p_e),
 						(p_i, i_id, p_e), return)
 
-DEFINEFUNC(libvlc_media_instance_t *, libvlc_playlist_get_media_instance, (
+DEFINEFUNC(libvlc_media_player_t *, libvlc_playlist_get_media_instance, (
 				libvlc_instance_t * p_i, libvlc_exception_t * p_e), (p_i, p_e), return)
 
-DEFINEFUNC(int, libvlc_media_instance_is_seekable, (
-				libvlc_media_instance_t * p_mi,
+DEFINEFUNC(int, libvlc_media_player_is_seekable, (
+				libvlc_media_player_t * p_mi,
 				libvlc_exception_t * p_e),
 				(p_mi, p_e), return)
 
-DEFINEFUNC(int, libvlc_media_instance_can_pause, (
-				libvlc_media_instance_t * p_mi,
+DEFINEFUNC(int, libvlc_media_player_can_pause, (
+				libvlc_media_player_t * p_mi,
 				libvlc_exception_t * p_e),
 				(p_mi, p_e), return)
 
-DEFINEFUNC(libvlc_media_instance_t *, libvlc_media_instance_new, (libvlc_instance_t * p_i, libvlc_exception_t * p_e), (p_i, p_e), return)
+DEFINEFUNC(libvlc_media_player_t *, libvlc_media_player_new, (libvlc_instance_t * p_i, libvlc_exception_t * p_e), (p_i, p_e), return)
 
-DEFINEFUNC(libvlc_media_instance_t *, libvlc_media_instance_new_from_media_descriptor, (
-						libvlc_media_descriptor_t * p_md,
+DEFINEFUNC(libvlc_media_player_t *, libvlc_media_player_new_from_media, (
+						libvlc_media_t * p_md,
 						libvlc_exception_t * p_e),
 						(p_md, p_e), return)
 
-DEFINEFUNC(void, libvlc_media_instance_release, (libvlc_media_instance_t * p_mi), (p_mi), )
+DEFINEFUNC(void, libvlc_media_player_release, (libvlc_media_player_t * p_mi), (p_mi), )
 
-DEFINEFUNC(void, libvlc_media_instance_retain, (libvlc_media_instance_t * p_mi), (p_mi), )
+DEFINEFUNC(void, libvlc_media_player_retain, (libvlc_media_player_t * p_mi), (p_mi), )
 
-DEFINEFUNC(void, libvlc_media_instance_set_media_descriptor, (libvlc_media_instance_t * p_mi, libvlc_media_descriptor_t * p_md, libvlc_exception_t * p_e), (p_mi, p_md, p_e), )
+DEFINEFUNC(void, libvlc_media_player_set_media, (libvlc_media_player_t * p_mi, libvlc_media_t * p_md, libvlc_exception_t * p_e), (p_mi, p_md, p_e), )
 
-DEFINEFUNC(libvlc_media_descriptor_t *, libvlc_media_instance_get_media_descriptor, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(libvlc_media_t *, libvlc_media_player_get_media, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(libvlc_event_manager_t *, libvlc_media_instance_event_manager, (
-						libvlc_media_instance_t * p_mi,
+DEFINEFUNC(libvlc_event_manager_t *, libvlc_media_player_event_manager, (
+						libvlc_media_player_t * p_mi,
 						libvlc_exception_t * p_e),
 						(p_mi, p_e), return)
 
-DEFINEFUNC(void, libvlc_media_instance_play, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), )
+DEFINEFUNC(void, libvlc_media_player_play, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), )
 
-DEFINEFUNC(void, libvlc_media_instance_pause, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), )
+DEFINEFUNC(void, libvlc_media_player_pause, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), )
 
-DEFINEFUNC(void, libvlc_media_instance_stop, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), )
+DEFINEFUNC(void, libvlc_media_player_stop, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), )
 
-DEFINEFUNC(void, libvlc_media_instance_set_drawable, (
-				libvlc_media_instance_t * p_mi,
+DEFINEFUNC(void, libvlc_media_player_set_drawable, (
+				libvlc_media_player_t * p_mi,
 				libvlc_drawable_t drawable,
 				libvlc_exception_t * p_e),
 				(p_mi, drawable, p_e), )
 
-DEFINEFUNC(libvlc_drawable_t, libvlc_media_instance_get_drawable, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(libvlc_drawable_t, libvlc_media_player_get_drawable, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(libvlc_time_t, libvlc_media_instance_get_length, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(libvlc_time_t, libvlc_media_player_get_length, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(libvlc_time_t, libvlc_media_instance_get_time, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(libvlc_time_t, libvlc_media_player_get_time, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(void, libvlc_media_instance_set_time, (libvlc_media_instance_t * p_mi, libvlc_time_t time, libvlc_exception_t * p_e), (p_mi, time, p_e), return)
+DEFINEFUNC(void, libvlc_media_player_set_time, (libvlc_media_player_t * p_mi, libvlc_time_t time, libvlc_exception_t * p_e), (p_mi, time, p_e), return)
 
-DEFINEFUNC(float, libvlc_media_instance_get_position, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(float, libvlc_media_player_get_position, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(void, libvlc_media_instance_set_position, (libvlc_media_instance_t * p_mi, float pos, libvlc_exception_t * p_e), (p_mi, pos, p_e), )
+DEFINEFUNC(void, libvlc_media_player_set_position, (libvlc_media_player_t * p_mi, float pos, libvlc_exception_t * p_e), (p_mi, pos, p_e), )
 
-DEFINEFUNC(void, libvlc_media_instance_set_chapter, (libvlc_media_instance_t * p_mi, int chapter, libvlc_exception_t * p_e), (p_mi, chapter, p_e), )
+DEFINEFUNC(void, libvlc_media_player_set_chapter, (libvlc_media_player_t * p_mi, int chapter, libvlc_exception_t * p_e), (p_mi, chapter, p_e), )
 
-DEFINEFUNC(int, libvlc_media_instance_get_chapter, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(int, libvlc_media_player_get_chapter, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(int, libvlc_media_instance_get_chapter_count, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(int, libvlc_media_player_get_chapter_count, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(int, libvlc_media_instance_will_play, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(int, libvlc_media_player_will_play, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(float, libvlc_media_instance_get_rate, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(float, libvlc_media_player_get_rate, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(void, libvlc_media_instance_set_rate, (libvlc_media_instance_t * p_mi, float rate, libvlc_exception_t * p_e), (p_mi, rate, p_e), return)
+DEFINEFUNC(void, libvlc_media_player_set_rate, (libvlc_media_player_t * p_mi, float rate, libvlc_exception_t * p_e), (p_mi, rate, p_e), return)
 
-DEFINEFUNC(libvlc_state_t, libvlc_media_instance_get_state, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(libvlc_state_t, libvlc_media_player_get_state, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(int, libvlc_media_instance_has_vout, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(int, libvlc_media_player_has_vout, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(float, libvlc_media_instance_get_fps, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
-
-DEFINEFUNC(libvlc_tag_query_t *, libvlc_tag_query_new, (libvlc_instance_t * p_i, libvlc_exception_t * p_e), (p_i, p_e), return)
-
-DEFINEFUNC(void, libvlc_tag_query_release, (libvlc_tag_query_t * p_q), (p_q), )
-
-DEFINEFUNC(void, libvlc_tag_query_retain, (libvlc_tag_query_t * p_q), (p_q), )
-
-DEFINEFUNC(void, libvlc_tag_query_set_match_tag_and_key, (
-					libvlc_tag_query_t * p_q,
-					libvlc_tag_t tag,
-					char * psz_tag_key,
-					libvlc_exception_t * p_e),
-					(p_q, tag, psz_tag_key, p_e), )
-
-DEFINEFUNC(int, libvlc_tag_query_match, (
-			libvlc_tag_query_t * p_q, libvlc_media_descriptor_t * p_md,
-			libvlc_exception_t * p_e),
-			(p_q, p_md, p_e), return)
+DEFINEFUNC(float, libvlc_media_player_get_fps, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
 DEFINEFUNC(libvlc_media_list_t *, libvlc_media_list_new, (libvlc_instance_t * p_i, libvlc_exception_t * p_e), (p_i, p_e), return)
 
@@ -360,26 +321,26 @@ DEFINEFUNC(void, libvlc_media_list_add_file_content, (
 					libvlc_exception_t * p_e),
 					(p_mlist, psz_uri, p_e), )
 
-DEFINEFUNC(void, libvlc_media_list_set_media_descriptor, (
+DEFINEFUNC(void, libvlc_media_list_set_media, (
 					libvlc_media_list_t * p_mlist,
-					libvlc_media_descriptor_t * p_md,
+					libvlc_media_t * p_md,
 					libvlc_exception_t * p_e),
 					(p_mlist, p_md, p_e), )
 
-DEFINEFUNC(libvlc_media_descriptor_t *, libvlc_media_list_media_descriptor, (
+DEFINEFUNC(libvlc_media_t *, libvlc_media_list_media, (
 					libvlc_media_list_t * p_mlist,
 					libvlc_exception_t * p_e),
 					(p_mlist, p_e), return)
 
-DEFINEFUNC(void, libvlc_media_list_add_media_descriptor, (
+DEFINEFUNC(void, libvlc_media_list_add_media, (
 					libvlc_media_list_t * p_mlist,
-					libvlc_media_descriptor_t * p_md,
+					libvlc_media_t * p_md,
 					libvlc_exception_t * p_e),
 					(p_mlist, p_md, p_e), )
 
-DEFINEFUNC(void, libvlc_media_list_insert_media_descriptor, (
+DEFINEFUNC(void, libvlc_media_list_insert_media, (
 					libvlc_media_list_t * p_mlist,
-					libvlc_media_descriptor_t * p_md,
+					libvlc_media_t * p_md,
 					int index,
 					libvlc_exception_t * p_e),
 					(p_mlist, p_md, index, p_e), )
@@ -395,7 +356,7 @@ DEFINEFUNC(int, libvlc_media_list_count, (
 			libvlc_exception_t * p_e),
 			(p_mlist, p_e), return)
 
-DEFINEFUNC(libvlc_media_descriptor_t *, libvlc_media_list_item_at_index, (
+DEFINEFUNC(libvlc_media_t *, libvlc_media_list_item_at_index, (
 				libvlc_media_list_t * p_mlist,
 				int index,
 				libvlc_exception_t * p_e),
@@ -403,7 +364,7 @@ DEFINEFUNC(libvlc_media_descriptor_t *, libvlc_media_list_item_at_index, (
 
 DEFINEFUNC(int, libvlc_media_list_index_of_item, (
 				libvlc_media_list_t * p_mlist,
-				libvlc_media_descriptor_t * p_md,
+				libvlc_media_t * p_md,
 				libvlc_exception_t * p_e),
 				(p_mlist, p_md, p_e), return)
 
@@ -444,7 +405,7 @@ DEFINEFUNC(int, libvlc_media_list_view_count, (
 				libvlc_exception_t * p_e),
 				(p_mlv, p_e), return)
 
-DEFINEFUNC(libvlc_media_descriptor_t *, libvlc_media_list_view_item_at_index, (
+DEFINEFUNC(libvlc_media_t *, libvlc_media_list_view_item_at_index, (
 					libvlc_media_list_view_t * p_mlv,
 					int index,
 					libvlc_exception_t * p_e),
@@ -458,19 +419,19 @@ DEFINEFUNC(libvlc_media_list_view_t *, libvlc_media_list_view_children_at_index,
 
 DEFINEFUNC(libvlc_media_list_view_t *, libvlc_media_list_view_children_for_item, (
 					libvlc_media_list_view_t * p_mlv,
-					libvlc_media_descriptor_t * p_md,
+					libvlc_media_t * p_md,
 					libvlc_exception_t * p_e),
 					(p_mlv, p_md, p_e), return)
 
 DEFINEFUNC(int, libvlc_media_list_view_index_of_item, (
 					libvlc_media_list_view_t * p_mlv,
-					libvlc_media_descriptor_t * p_md,
+					libvlc_media_t * p_md,
 					libvlc_exception_t * p_e),
 					(p_mlv, p_md, p_e), return)
 
 DEFINEFUNC(void, libvlc_media_list_view_insert_at_index, (
 					libvlc_media_list_view_t * p_mlv,
-					libvlc_media_descriptor_t * p_md,
+					libvlc_media_t * p_md,
 					int index,
 					libvlc_exception_t * p_e),
 					(p_mlv, p_md, index, p_e), )
@@ -483,7 +444,7 @@ DEFINEFUNC(void, libvlc_media_list_view_remove_at_index, (
 
 DEFINEFUNC(void, libvlc_media_list_view_add_item, (
 				libvlc_media_list_view_t * p_mlv,
-				libvlc_media_descriptor_t * p_md,
+				libvlc_media_t * p_md,
 				libvlc_exception_t * p_e),
 				(p_mlv, p_md, p_e), )
 
@@ -491,23 +452,6 @@ DEFINEFUNC(libvlc_media_list_t *, libvlc_media_list_view_parent_media_list, (
 					libvlc_media_list_view_t * p_mlv,
 					libvlc_exception_t * p_e),
 					(p_mlv, p_e), return)
-
-DEFINEFUNC(libvlc_dynamic_media_list_t *, libvlc_dynamic_media_list_new, (
-				libvlc_media_list_t * p_mlist,
-				libvlc_tag_query_t * p_query,
-				libvlc_tag_t tag,
-				libvlc_exception_t * p_e),
-				(p_mlist, p_query, tag, p_e), return)
-
-DEFINEFUNC(void, libvlc_dynamic_media_list_release, (libvlc_dynamic_media_list_t * p_dmlist), (p_dmlist), )
-
-DEFINEFUNC(void, libvlc_dynamic_media_list_retain, (libvlc_dynamic_media_list_t * p_dmlist), (p_dmlist), )
-
-/*
-DEFINEFUNC(libvlc_media_list_t *, libvlc_dynamic_media_list_media_list, (
-					libvlc_dynamic_media_list_t * p_dmlist,
-					libvlc_exception_t * p_e), (p_dmlist, p_e), return)
-*/
 
 DEFINEFUNC(libvlc_media_library_t *, libvlc_media_library_new, (
 							libvlc_instance_t * p_i,
@@ -517,7 +461,6 @@ DEFINEFUNC(libvlc_media_library_t *, libvlc_media_library_new, (
 DEFINEFUNC(void, libvlc_media_library_release, (libvlc_media_library_t * p_mlib), (p_mlib), )
 
 DEFINEFUNC(void, libvlc_media_library_retain, (libvlc_media_library_t * p_mlib), (p_mlib), )
-
 
 DEFINEFUNC(void, libvlc_media_library_load, (
 			libvlc_media_library_t * p_mlib,
@@ -543,7 +486,7 @@ DEFINEFUNC(void, libvlc_media_list_player_release, (libvlc_media_list_player_t *
 
 DEFINEFUNC(void, libvlc_media_list_player_set_media_instance, (
 				libvlc_media_list_player_t * p_mlp,
-				libvlc_media_instance_t * p_mi,
+				libvlc_media_player_t * p_mi,
 				libvlc_exception_t * p_e),
 				(p_mlp, p_mi, p_e), )
 
@@ -581,7 +524,7 @@ DEFINEFUNC(void, libvlc_media_list_player_play_item_at_index, (
 
 DEFINEFUNC(void, libvlc_media_list_player_play_item, (
 				libvlc_media_list_player_t * p_mlp,
-				libvlc_media_descriptor_t * p_md,
+				libvlc_media_t * p_md,
 				libvlc_exception_t * p_e),
 				(p_mlp, p_md, p_e), )
 
@@ -595,43 +538,43 @@ DEFINEFUNC(void, libvlc_media_list_player_next, (
 				libvlc_exception_t * p_e),
 				(p_mlp, p_e), )
 
-DEFINEFUNC(void, libvlc_toggle_fullscreen, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), )
+DEFINEFUNC(void, libvlc_toggle_fullscreen, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), )
 
-DEFINEFUNC(void, libvlc_set_fullscreen, (libvlc_media_instance_t * p_mi, int fullscreen, libvlc_exception_t * p_e), (p_mi, fullscreen, p_e), )
+DEFINEFUNC(void, libvlc_set_fullscreen, (libvlc_media_player_t * p_mi, int fullscreen, libvlc_exception_t * p_e), (p_mi, fullscreen, p_e), )
 
-DEFINEFUNC(int, libvlc_get_fullscreen, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(int, libvlc_get_fullscreen, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(int, libvlc_video_get_height, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(int, libvlc_video_get_height, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(int, libvlc_video_get_width, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(int, libvlc_video_get_width, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(char *, libvlc_video_get_aspect_ratio, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(char *, libvlc_video_get_aspect_ratio, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(void, libvlc_video_set_aspect_ratio, (libvlc_media_instance_t * p_mi, char * psz_aspect, libvlc_exception_t * p_e), (p_mi, psz_aspect, p_e), )
+DEFINEFUNC(void, libvlc_video_set_aspect_ratio, (libvlc_media_player_t * p_mi, char * psz_aspect, libvlc_exception_t * p_e), (p_mi, psz_aspect, p_e), )
 
-DEFINEFUNC(int, libvlc_video_get_spu, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(int, libvlc_video_get_spu, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(void, libvlc_video_set_spu, (libvlc_media_instance_t * p_mi, int i_spu, libvlc_exception_t * p_e), (p_mi, i_spu, p_e), )
+DEFINEFUNC(void, libvlc_video_set_spu, (libvlc_media_player_t * p_mi, int i_spu, libvlc_exception_t * p_e), (p_mi, i_spu, p_e), )
 
-DEFINEFUNC(char *, libvlc_video_get_crop_geometry, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(char *, libvlc_video_get_crop_geometry, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(void, libvlc_video_set_crop_geometry, (libvlc_media_instance_t * p_mi, char * psz_geometry, libvlc_exception_t * p_e), (p_mi, psz_geometry, p_e), )
+DEFINEFUNC(void, libvlc_video_set_crop_geometry, (libvlc_media_player_t * p_mi, char * psz_geometry, libvlc_exception_t * p_e), (p_mi, psz_geometry, p_e), )
 
-DEFINEFUNC(void, libvlc_toggle_teletext, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), )
+DEFINEFUNC(void, libvlc_toggle_teletext, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), )
 
-DEFINEFUNC(int, libvlc_video_get_teletext, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(int, libvlc_video_get_teletext, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(void, libvlc_video_set_teletext, (libvlc_media_instance_t * p_mi, int i_page, libvlc_exception_t * p_e), (p_mi, i_page, p_e), )
+DEFINEFUNC(void, libvlc_video_set_teletext, (libvlc_media_player_t * p_mi, int i_page, libvlc_exception_t * p_e), (p_mi, i_page, p_e), )
 
-DEFINEFUNC(void, libvlc_video_take_snapshot, (libvlc_media_instance_t * p_mi, char * psz_filepath, unsigned int i_width, unsigned int i_height, libvlc_exception_t * p_e), (p_mi, psz_filepath, i_width, i_height, p_e), )
+DEFINEFUNC(void, libvlc_video_take_snapshot, (libvlc_media_player_t * p_mi, char * psz_filepath, unsigned int i_width, unsigned int i_height, libvlc_exception_t * p_e), (p_mi, psz_filepath, i_width, i_height, p_e), )
 
-DEFINEFUNC(int, libvlc_video_destroy, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(int, libvlc_video_destroy, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(void, libvlc_video_resize, (libvlc_media_instance_t * p_mi, int i_width, int i_height, libvlc_exception_t * p_e), (p_mi, i_width, i_height, p_e), )
+DEFINEFUNC(void, libvlc_video_resize, (libvlc_media_player_t * p_mi, int i_width, int i_height, libvlc_exception_t * p_e), (p_mi, i_width, i_height, p_e), )
 
-DEFINEFUNC(int, libvlc_video_reparent, (libvlc_media_instance_t * p_mi, libvlc_drawable_t drawable, libvlc_exception_t * p_e), (p_mi, drawable, p_e), return)
+DEFINEFUNC(int, libvlc_video_reparent, (libvlc_media_player_t * p_mi, libvlc_drawable_t drawable, libvlc_exception_t * p_e), (p_mi, drawable, p_e), return)
 
-DEFINEFUNC(void, libvlc_video_redraw_rectangle, (libvlc_media_instance_t * p_mi, const libvlc_rectangle_t * area, libvlc_exception_t * p_e), (p_mi, area, p_e), )
+DEFINEFUNC(void, libvlc_video_redraw_rectangle, (libvlc_media_player_t * p_mi, const libvlc_rectangle_t * area, libvlc_exception_t * p_e), (p_mi, area, p_e), )
 
 DEFINEFUNC(void, libvlc_video_set_parent, (
 				libvlc_instance_t * p_i,
@@ -655,11 +598,11 @@ DEFINEFUNC(int, libvlc_audio_get_volume, (libvlc_instance_t * p_i, libvlc_except
 
 DEFINEFUNC(void, libvlc_audio_set_volume, (libvlc_instance_t * p_i, int i_volume, libvlc_exception_t * p_e), (p_i, i_volume, p_e), )
 
-DEFINEFUNC(int, libvlc_audio_get_track_count, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(int, libvlc_audio_get_track_count, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(int, libvlc_audio_get_track, (libvlc_media_instance_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
+DEFINEFUNC(int, libvlc_audio_get_track, (libvlc_media_player_t * p_mi, libvlc_exception_t * p_e), (p_mi, p_e), return)
 
-DEFINEFUNC(void, libvlc_audio_set_track, (libvlc_media_instance_t * p_mi, int i_track, libvlc_exception_t * p_e), (p_mi, i_track, p_e), )
+DEFINEFUNC(void, libvlc_audio_set_track, (libvlc_media_player_t * p_mi, int i_track, libvlc_exception_t * p_e), (p_mi, i_track, p_e), )
 
 DEFINEFUNC(int, libvlc_audio_get_channel, (libvlc_instance_t * p_i, libvlc_exception_t * p_e), (p_i, p_e), return)
 

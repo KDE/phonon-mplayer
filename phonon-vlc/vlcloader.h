@@ -27,11 +27,11 @@ extern libvlc_instance_t * _vlcInstance;
 /** Libvlc exception handling global variable. */
 extern libvlc_exception_t * _vlcException;
 
-/** Libvlc media instance global variable. */
-extern libvlc_media_instance_t * _vlcMediaInstance;
+/** Libvlc media player global variable. */
+extern libvlc_media_player_t * _vlcMediaPlayer;
 
 /** Libvlc widget id global variable, where vlc will show images/movies. */
-extern libvlc_drawable_t _vlcMediaInstanceWidgetId;
+extern libvlc_drawable_t _vlcMediaPlayerWidgetId;
 
 namespace Phonon
 {

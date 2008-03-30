@@ -34,13 +34,13 @@ static const int VLC_POSITION_RESOLUTION = 1000;
 VLCMediaObject::VLCMediaObject(QObject * parent)
 	: QObject(parent) {
 
-	//MediaInstance
-	_vlcMediaInstance = NULL;
-	_vlcMediaInstanceEventManager = NULL;
+	//MediaPlayer
+	_vlcMediaPlayer = NULL;
+	_vlcMediaPlayerEventManager = NULL;
 
-	//MediaDescriptor
-	_vlcMediaDescriptor = NULL;
-	_vlcMediaDescriptorEventManager = NULL;
+	//Media
+	_vlcMedia = NULL;
+	_vlcMediaEventManager = NULL;
 
 	//MediaList
 	_vlcMediaList = NULL;
@@ -67,96 +67,61 @@ void VLCMediaObject::loadMedia(const QString & filename) {
 
 	//See code from http://wiki.videolan.org/LibVLC_Media_List_Management
 
-	_vlcMediaList = p_libvlc_media_list_new(_vlcInstance, _vlcException);
+	//Create a new media from a filename
+	_vlcMedia = p_libvlc_media_new(_vlcInstance, filename.toAscii(), _vlcException);
 	checkException();
 
-	//Create a new item
-	_vlcMediaDescriptor = p_libvlc_media_descriptor_new(_vlcInstance, filename.toAscii(), _vlcException);
-	checkException();
+	//Create a media player environement
+	_vlcMediaPlayer = p_libvlc_media_player_new_from_media(_vlcMedia, _vlcException);
 
-	p_libvlc_media_list_add_media_descriptor(_vlcMediaList, _vlcMediaDescriptor, _vlcException);
+	//No need to keep the media now
+	//p_libvlc_media_release(_vlcMedia);
 
-	//Old API
-	//Create a media instance playing environement
-	//_vlcMediaInstance = p_libvlc_media_instance_new_from_media_descriptor(_vlcMediaDescriptor, _vlcException);
-
-	//No need to keep the media descriptor now
-	//p_libvlc_media_descriptor_release(_vlcMediaDescriptor);
-
-	_vlcMediaListPlayer = p_libvlc_media_list_player_new(_vlcInstance, _vlcException);
-	checkException();
-
-	_vlcMediaInstance = p_libvlc_media_instance_new(_vlcInstance, _vlcException);
-	checkException();
-
-
-	//connectToAllVLCEvents() at the end since it needs _vlcMediaInstance
+	//connectToAllVLCEvents() at the end since it needs _vlcMediaPlayer
 	connectToAllVLCEvents();
 
-
-	//Use our media list
-	p_libvlc_media_list_player_set_media_list(_vlcMediaListPlayer, _vlcMediaList, _vlcException);
-	checkException();
-
-	//Use a given media instance
-	p_libvlc_media_list_player_set_media_instance(_vlcMediaListPlayer, _vlcMediaInstance, _vlcException);
-	checkException();
-
-	qDebug() << "duration:" << p_libvlc_media_descriptor_get_duration(_vlcMediaDescriptor, _vlcException);
+	qDebug() << "duration:" << p_libvlc_media_get_duration(_vlcMedia, _vlcException);
 
 	//updateMetaData();
 	emit stateChanged(Phonon::StoppedState);
 }
 
 void VLCMediaObject::play() {
-	//Get our media instance to use our window
-	p_libvlc_media_instance_set_drawable(_vlcMediaInstance, _vlcMediaInstanceWidgetId, _vlcException);
+	//Get our media player to use our window
+	//FIXME This code does not work inside libvlc!!!
+	//Check VideoWidget.cpp p_libvlc_video_set_parent()
+	p_libvlc_media_player_set_drawable(_vlcMediaPlayer, _vlcMediaPlayerWidgetId, _vlcException);
 	checkException();
 
 	//Play
-	//p_libvlc_media_list_player_play(_vlcMediaListPlayer, _vlcException);
-	//checkException();
-
-	p_libvlc_media_list_player_play_item(_vlcMediaListPlayer, _vlcMediaDescriptor, _vlcException);
+	p_libvlc_media_player_play(_vlcMediaPlayer, _vlcException);
 	checkException();
-
-	//Old API
-	//Hook into a window
-	//This code does not work inside libvlc!!!
-	//Check VideoWidget.cpp p_libvlc_video_set_parent()
-	//p_libvlc_media_instance_set_drawable(_vlcMediaInstance, _vlcMediaInstanceWidgetId, _vlcException);
-
-	//Old API
-	//p_libvlc_media_instance_play(_vlcMediaInstance, _vlcException);
-	//checkException();
 
 	updateMetaData();
 }
 
 void VLCMediaObject::pause() {
-	p_libvlc_media_list_player_pause(_vlcMediaListPlayer, _vlcException);
-	//p_libvlc_media_instance_pause(_vlcMediaInstance, _vlcException);
+	p_libvlc_media_player_pause(_vlcMediaPlayer, _vlcException);
 	checkException();
 }
 
 void VLCMediaObject::stop() {
-	p_libvlc_media_list_player_stop(_vlcMediaListPlayer, _vlcException);
-	//p_libvlc_media_instance_stop(_vlcMediaInstance, _vlcException);
+	p_libvlc_media_player_stop(_vlcMediaPlayer, _vlcException);
 	checkException();
 
-	//VLC does not send a StoppedState when running libvlc_media_instance_stop() :/
+	//VLC does not send a StoppedState when running libvlc_media_player_stop() :/
 	emit stateChanged(Phonon::StoppedState);
 }
 
 void VLCMediaObject::seek(qint64 milliseconds) {
-	p_libvlc_media_instance_set_time(_vlcMediaInstance, milliseconds, _vlcException);
+	p_libvlc_media_player_set_time(_vlcMediaPlayer, milliseconds, _vlcException);
 	checkException();
 }
 
 Phonon::State VLCMediaObject::state() const {
 	libvlc_state_t st = libvlc_Stopped;
-	if (_vlcMediaInstance) {
-		st = p_libvlc_media_instance_get_state(_vlcMediaInstance, _vlcException);
+	if (_vlcMediaPlayer) {
+		st = p_libvlc_media_player_get_state(_vlcMediaPlayer, _vlcException);
 		checkException();
 	}
 
@@ -200,14 +165,14 @@ QString VLCMediaObject::errorString() const {
 }
 
 bool VLCMediaObject::hasVideo() const {
-	bool hasVideo = p_libvlc_media_instance_has_vout(_vlcMediaInstance, _vlcException);
+	bool hasVideo = p_libvlc_media_player_has_vout(_vlcMediaPlayer, _vlcException);
 	checkException();
 
 	return hasVideo;
 }
 
 bool VLCMediaObject::isSeekable() const {
-	bool isSeekable = p_libvlc_media_instance_is_seekable(_vlcMediaInstance, _vlcException);
+	bool isSeekable = p_libvlc_media_player_is_seekable(_vlcMediaPlayer, _vlcException);
 	checkException();
 
 	return isSeekable;
@@ -215,9 +180,9 @@ bool VLCMediaObject::isSeekable() const {
 
 void VLCMediaObject::connectToAllVLCEvents() {
 
-	//MediaInstance
-	_vlcMediaInstanceEventManager = p_libvlc_media_instance_event_manager(_vlcMediaInstance, _vlcException);
-	libvlc_event_type_t eventsMediaInstance[] = {
+	//MediaPlayer
+	_vlcMediaPlayerEventManager = p_libvlc_media_player_event_manager(_vlcMediaPlayer, _vlcException);
+	libvlc_event_type_t eventsMediaPlayer[] = {
 		libvlc_MediaInstancePlayed,
 		libvlc_MediaInstancePaused,
 		libvlc_MediaInstanceReachedEnd,
@@ -227,15 +192,15 @@ void VLCMediaObject::connectToAllVLCEvents() {
 		libvlc_MediaInstanceSeekableChanged,
 		libvlc_MediaInstancePausableChanged,
 	};
-	int nbEvents = sizeof(eventsMediaInstance) / sizeof(*eventsMediaInstance);
+	int nbEvents = sizeof(eventsMediaPlayer) / sizeof(*eventsMediaPlayer);
 	for (int i = 0; i < nbEvents; i++) {
-		p_libvlc_event_attach(_vlcMediaInstanceEventManager, eventsMediaInstance[i], libvlc_callback, this, _vlcException);
+		p_libvlc_event_attach(_vlcMediaPlayerEventManager, eventsMediaPlayer[i], libvlc_callback, this, _vlcException);
 	}
 
 
-	//MediaDescriptor
-	_vlcMediaDescriptorEventManager = p_libvlc_media_descriptor_event_manager(_vlcMediaDescriptor, _vlcException);
-	libvlc_event_type_t eventsMediaDescriptor[] = {
+	//Media
+	_vlcMediaEventManager = p_libvlc_media_event_manager(_vlcMedia, _vlcException);
+	libvlc_event_type_t eventsMedia[] = {
 		libvlc_MediaDescriptorMetaChanged,
 		libvlc_MediaDescriptorSubItemAdded,
 		libvlc_MediaDescriptorDurationChanged,
@@ -243,14 +208,15 @@ void VLCMediaObject::connectToAllVLCEvents() {
 		libvlc_MediaDescriptorFreed,
 		libvlc_MediaDescriptorStateChanged,
 	};
-	nbEvents = sizeof(eventsMediaDescriptor) / sizeof(*eventsMediaDescriptor);
+	nbEvents = sizeof(eventsMedia) / sizeof(*eventsMedia);
 	for (int i = 0; i < nbEvents; i++) {
-		p_libvlc_event_attach(_vlcMediaDescriptorEventManager, eventsMediaDescriptor[i], libvlc_callback, this, _vlcException);
+		p_libvlc_event_attach(_vlcMediaEventManager, eventsMedia[i], libvlc_callback, this, _vlcException);
 		checkException();
 	}
 
 
 	//MediaList
+	/*
 	_vlcMediaListEventManager = p_libvlc_media_list_event_manager(_vlcMediaList, _vlcException);
 	libvlc_event_type_t eventsMediaList[] = {
 		libvlc_MediaListItemAdded,
@@ -262,6 +228,7 @@ void VLCMediaObject::connectToAllVLCEvents() {
 	for (int i = 0; i < nbEvents; i++) {
 		p_libvlc_event_attach(_vlcMediaListEventManager, eventsMediaList[i], libvlc_callback, this, _vlcException);
 	}
+	*/
 
 
 	//MediaListView
@@ -319,7 +286,7 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 
 	if (event->type == libvlc_MediaInstanceTimeChanged) {
 		//new_time / VLC_POSITION_RESOLUTION since VLC adds * VLC_POSITION_RESOLUTION, don't know why...
-		qDebug() << "new_time:" << event->u.media_instance_time_changed.new_time;
+		qDebug() << "new_time:" << event->u.media_player_time_changed.new_time;
 		vlcMediaObject->totalTime();
 		vlcMediaObject->currentTime();
 		//emit vlcMediaObject->tick(event->u.media_instance_time_changed.new_time / VLC_POSITION_RESOLUTION);
@@ -363,9 +330,9 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 
 	if (event->type == libvlc_MediaDescriptorDurationChanged) {
 		//new_duration / VLC_POSITION_RESOLUTION since VLC adds * VLC_POSITION_RESOLUTION, don't know why...
-		qDebug() << "new_duration:" << event->u.media_descriptor_duration_changed.new_duration / 1000;
+		qDebug() << "new_duration:" << event->u.media_duration_changed.new_duration / 1000;
 
-		emit vlcMediaObject->totalTimeChanged(event->u.media_descriptor_duration_changed.new_duration / 1000);
+		emit vlcMediaObject->totalTimeChanged(event->u.media_duration_changed.new_duration / 1000);
 		//emit vlcMediaObject->tick(vlcMediaObject->totalTime());
 	}
 
@@ -376,7 +343,7 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 
 void VLCMediaObject::updateMetaData() {
 
-	qDebug() << "ARTIST:" << p_libvlc_media_descriptor_get_meta(_vlcMediaDescriptor, libvlc_meta_Artist, _vlcException);
+	qDebug() << "ARTIST:" << p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Artist, _vlcException);
 
 
 	//~ libvlc_meta_Title,
@@ -407,17 +374,17 @@ void VLCMediaObject::updateMetaData() {
 
 	QMultiMap<QString, QString> metaDataMap;
 
-	metaDataMap.insert(QLatin1String("ARTIST"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_vlcMediaDescriptor, libvlc_meta_Artist, _vlcException)));
-	metaDataMap.insert(QLatin1String("ALBUM"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_vlcMediaDescriptor, libvlc_meta_Album, _vlcException)));
-	metaDataMap.insert(QLatin1String("TITLE"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_vlcMediaDescriptor, libvlc_meta_Title, _vlcException)));
-	metaDataMap.insert(QLatin1String("DATE"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_vlcMediaDescriptor, libvlc_meta_Date, _vlcException)));
-	metaDataMap.insert(QLatin1String("GENRE"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_vlcMediaDescriptor, libvlc_meta_Genre, _vlcException)));
-	metaDataMap.insert(QLatin1String("TRACKNUMBER"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_vlcMediaDescriptor, libvlc_meta_TrackNumber, _vlcException)));
-	metaDataMap.insert(QLatin1String("DESCRIPTION"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_vlcMediaDescriptor, libvlc_meta_Description, _vlcException)));
+	metaDataMap.insert(QLatin1String("ARTIST"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Artist, _vlcException)));
+	metaDataMap.insert(QLatin1String("ALBUM"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Album, _vlcException)));
+	metaDataMap.insert(QLatin1String("TITLE"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Title, _vlcException)));
+	metaDataMap.insert(QLatin1String("DATE"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Date, _vlcException)));
+	metaDataMap.insert(QLatin1String("GENRE"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Genre, _vlcException)));
+	metaDataMap.insert(QLatin1String("TRACKNUMBER"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_TrackNumber, _vlcException)));
+	metaDataMap.insert(QLatin1String("DESCRIPTION"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Description, _vlcException)));
 
-	metaDataMap.insert(QLatin1String("COPYRIGHT"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_vlcMediaDescriptor, libvlc_meta_TrackNumber, _vlcException)));
-	metaDataMap.insert(QLatin1String("URL"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_vlcMediaDescriptor, libvlc_meta_URL, _vlcException)));
-	metaDataMap.insert(QLatin1String("ENCODEDBY"), QString::fromUtf8(p_libvlc_media_descriptor_get_meta(_vlcMediaDescriptor, libvlc_meta_EncodedBy, _vlcException)));
+	metaDataMap.insert(QLatin1String("COPYRIGHT"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_TrackNumber, _vlcException)));
+	metaDataMap.insert(QLatin1String("URL"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_URL, _vlcException)));
+	metaDataMap.insert(QLatin1String("ENCODEDBY"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_EncodedBy, _vlcException)));
 
 	emit metaDataChanged(metaDataMap);
 }
@@ -425,8 +392,8 @@ void VLCMediaObject::updateMetaData() {
 qint64 VLCMediaObject::totalTime() const {
 	libvlc_time_t time = 0;
 
-	if (_vlcMediaInstance) {
-		time = p_libvlc_media_instance_get_length(_vlcMediaInstance, _vlcException);
+	if (_vlcMediaPlayer) {
+		time = p_libvlc_media_player_get_length(_vlcMediaPlayer, _vlcException);
 		checkException();
 	}
 
@@ -436,7 +403,7 @@ qint64 VLCMediaObject::totalTime() const {
 }
 
 qint64 VLCMediaObject::currentTime() const {
-	libvlc_time_t time = p_libvlc_media_instance_get_time(_vlcMediaInstance, _vlcException);
+	libvlc_time_t time = p_libvlc_media_player_get_time(_vlcMediaPlayer, _vlcException);
 	checkException();
 
 	qDebug() << "currentTime:" << time;
