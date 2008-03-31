@@ -98,10 +98,11 @@ void MediaObject::play() {
 }
 
 void MediaObject::loadMediaInternal(const QString & filename) {
-	//Loads the media_instance
-	_vlcMediaObject->loadMedia(filename);
+	//Default MediaObject state is Phonon::LoadingState
+	_currentState = Phonon::LoadingState;
 
-	emit currentSourceChanged(_mediaSource);
+	//Loads the libvlc_media
+	_vlcMediaObject->loadMedia(filename);
 }
 
 void MediaObject::playInternal(const QString & filename) {
@@ -110,9 +111,8 @@ void MediaObject::playInternal(const QString & filename) {
 	}
 
 	else {
-		//Play the media_instance
 		loadMediaInternal(filename);
-		_vlcMediaObject->loadMedia(filename);
+		//Play the libvlc_media
 		_vlcMediaObject->play();
 	}
 }
@@ -149,23 +149,33 @@ bool MediaObject::isSeekable() const {
 }
 
 qint64 MediaObject::currentTime() const {
+	qint64 time = -1;
 	Phonon::State st = state();
 
 	switch(st) {
 	case Phonon::PausedState:
+		time = _vlcMediaObject->currentTime();
+		break;
 	case Phonon::BufferingState:
+		time = _vlcMediaObject->currentTime();
+		break;
 	case Phonon::PlayingState:
-		return _vlcMediaObject->currentTime();
+		time = _vlcMediaObject->currentTime();
+		break;
 	case Phonon::StoppedState:
+		time = 0;
+		break;
 	case Phonon::LoadingState:
-		return 0;
+		time = 0;
+		break;
 	case Phonon::ErrorState:
+		time = -1;
 		break;
 	default:
 		qCritical() << __FUNCTION__ << "error: unsupported Phonon::State:" << st;
 	}
 
-	return -1;
+	return time;
 }
 
 Phonon::State MediaObject::state() const {
@@ -193,7 +203,6 @@ void MediaObject::setSource(const MediaSource & source) {
 
 	switch (source.type()) {
 	case MediaSource::Invalid:
-		stop();
 		break;
 	case MediaSource::LocalFile:
 		loadMediaInternal(_mediaSource.fileName());
@@ -256,6 +265,12 @@ QVariant MediaObject::interfaceCall(Interface iface, int command, const QList<QV
 }
 
 void MediaObject::stateChangedInternal(Phonon::State newState) {
+	if (newState == _currentState) {
+		//No state changed
+		return;
+	}
+
+	//State changed
 	Phonon::State previousState = _currentState;
 	_currentState = newState;
 	emit stateChanged(_currentState, previousState);
