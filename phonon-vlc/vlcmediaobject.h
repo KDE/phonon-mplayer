@@ -69,7 +69,7 @@ signals:
 	//void aboutToFinish()
 	//void bufferStatus(int percentFilled);
 	//void currentSourceChanged(const Phonon::MediaSource & newSource);
-	//void finished()
+	void finished();
 	//void hasVideoChanged(bool hasVideo);
 	void metaDataChanged(const QMultiMap<QString, QString> & metaData);
 	//void prefinishMarkReached(qint32 msecToEnd);

@@ -108,9 +108,6 @@ void VLCMediaObject::pause() {
 void VLCMediaObject::stop() {
 	p_libvlc_media_player_stop(_vlcMediaPlayer, _vlcException);
 	checkException();
-
-	//VLC does not send a StoppedState when running libvlc_media_player_stop() :/
-	emit stateChanged(Phonon::StoppedState);
 }
 
 void VLCMediaObject::seek(qint64 milliseconds) {
@@ -183,14 +180,15 @@ void VLCMediaObject::connectToAllVLCEvents() {
 	//MediaPlayer
 	_vlcMediaPlayerEventManager = p_libvlc_media_player_event_manager(_vlcMediaPlayer, _vlcException);
 	libvlc_event_type_t eventsMediaPlayer[] = {
-		libvlc_MediaInstancePlayed,
-		libvlc_MediaInstancePaused,
-		libvlc_MediaInstanceReachedEnd,
-		libvlc_MediaInstanceEncounteredError,
-		libvlc_MediaInstanceTimeChanged,
-		libvlc_MediaInstancePositionChanged,
-		libvlc_MediaInstanceSeekableChanged,
-		libvlc_MediaInstancePausableChanged,
+		libvlc_MediaPlayerPlayed,
+		libvlc_MediaPlayerPaused,
+		libvlc_MediaPlayerEndReached,
+		libvlc_MediaPlayerStopped,
+		libvlc_MediaPlayerEncounteredError,
+		libvlc_MediaPlayerTimeChanged,
+		libvlc_MediaPlayerPositionChanged,
+		libvlc_MediaPlayerSeekableChanged,
+		libvlc_MediaPlayerPausableChanged,
 	};
 	int nbEvents = sizeof(eventsMediaPlayer) / sizeof(*eventsMediaPlayer);
 	for (int i = 0; i < nbEvents; i++) {
@@ -201,12 +199,12 @@ void VLCMediaObject::connectToAllVLCEvents() {
 	//Media
 	_vlcMediaEventManager = p_libvlc_media_event_manager(_vlcMedia, _vlcException);
 	libvlc_event_type_t eventsMedia[] = {
-		libvlc_MediaDescriptorMetaChanged,
-		libvlc_MediaDescriptorSubItemAdded,
-		libvlc_MediaDescriptorDurationChanged,
-		//libvlc_MediaDescriptorPreparsedChanged,
-		libvlc_MediaDescriptorFreed,
-		libvlc_MediaDescriptorStateChanged,
+		libvlc_MediaMetaChanged,
+		libvlc_MediaSubItemAdded,
+		libvlc_MediaDurationChanged,
+		//libvlc_MediaPreparsedChanged,
+		libvlc_MediaFreed,
+		libvlc_MediaStateChanged,
 	};
 	nbEvents = sizeof(eventsMedia) / sizeof(*eventsMedia);
 	for (int i = 0; i < nbEvents; i++) {
@@ -284,7 +282,7 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 
 	qDebug() << "event=" << (int) vlcMediaObject << p_libvlc_event_type_name(event->type);
 
-	if (event->type == libvlc_MediaInstanceTimeChanged) {
+	if (event->type == libvlc_MediaPlayerTimeChanged) {
 		//new_time / VLC_POSITION_RESOLUTION since VLC adds * VLC_POSITION_RESOLUTION, don't know why...
 		qDebug() << "new_time:" << event->u.media_player_time_changed.new_time;
 		vlcMediaObject->totalTime();
@@ -302,33 +300,40 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 	//~ Phonon::PausedState
 	//~ Phonon::ErrorState
 
-	//~ libvlc_MediaInstancePlayed,
-	//~ libvlc_MediaInstancePaused,
-	//~ libvlc_MediaInstanceReachedEnd,
-	//~ libvlc_MediaInstanceEncounteredError,
-	//~ libvlc_MediaInstanceTimeChanged,
-	//~ libvlc_MediaInstancePositionChanged,
-	//~ libvlc_MediaInstanceSeekableChanged,
-	//~ libvlc_MediaInstancePausableChanged,
+	//~ libvlc_MediaPlayerPlayed,
+	//~ libvlc_MediaPlayerPaused,
+	//~ libvlc_MediaPlayerEndReached,
+	//~ libvlc_MediaPlayerStopped,
+	//~ libvlc_MediaPlayerEncounteredError,
+	//~ libvlc_MediaPlayerTimeChanged,
+	//~ libvlc_MediaPlayerPositionChanged,
+	//~ libvlc_MediaPlayerSeekableChanged,
+	//~ libvlc_MediaPlayerPausableChanged,
 
 	//Media instance event
 
-	if (event->type == libvlc_MediaInstancePlayed) {
+	if (event->type == libvlc_MediaPlayerPlayed) {
 		emit vlcMediaObject->stateChanged(Phonon::PlayingState);
 		vlcMediaObject->updateMetaData();
 	}
 
-	if (event->type == libvlc_MediaInstancePaused) {
+	if (event->type == libvlc_MediaPlayerPaused) {
 		emit vlcMediaObject->stateChanged(Phonon::PausedState);
 	}
 
-	if (event->type == libvlc_MediaInstanceReachedEnd) {
+	if (event->type == libvlc_MediaPlayerEndReached) {
 		emit vlcMediaObject->stateChanged(Phonon::StoppedState);
+		emit vlcMediaObject->finished();
+	}
+
+	if (event->type == libvlc_MediaPlayerStopped) {
+		emit vlcMediaObject->stateChanged(Phonon::StoppedState);
+		emit vlcMediaObject->finished();
 	}
 
 	//Meta descriptor event
 
-	if (event->type == libvlc_MediaDescriptorDurationChanged) {
+	if (event->type == libvlc_MediaDurationChanged) {
 		//new_duration / VLC_POSITION_RESOLUTION since VLC adds * VLC_POSITION_RESOLUTION, don't know why...
 		qDebug() << "new_duration:" << event->u.media_duration_changed.new_duration / 1000;
 
@@ -336,7 +341,7 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 		//emit vlcMediaObject->tick(vlcMediaObject->totalTime());
 	}
 
-	if (event->type == libvlc_MediaDescriptorMetaChanged) {
+	if (event->type == libvlc_MediaMetaChanged) {
 		vlcMediaObject->updateMetaData();
 	}
 }

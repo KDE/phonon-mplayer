@@ -29,7 +29,7 @@ namespace VLC
 {
 
 MediaObject::MediaObject(QObject * parent)
-	: QThread(parent) {
+	: QObject(parent) {
 
 	_currentState = Phonon::LoadingState;
 
@@ -45,32 +45,15 @@ MediaObject::MediaObject(QObject * parent)
 		SIGNAL(totalTimeChanged(qint64)), Qt::QueuedConnection);
 	connect(_vlcMediaObject, SIGNAL(metaDataChanged(const QMultiMap<QString, QString> &)),
 		SIGNAL(metaDataChanged(const QMultiMap<QString, QString> &)), Qt::QueuedConnection);
-
-	/* Threaded connections */
-
-	connect(this, SIGNAL(playSignalThreaded()), SLOT(playSlotThreaded()), Qt::QueuedConnection);
-	connect(this, SIGNAL(pauseSignalThreaded()), SLOT(pauseSlotThreaded()), Qt::QueuedConnection);
-	connect(this, SIGNAL(stopSignalThreaded()), SLOT(stopSlotThreaded()), Qt::QueuedConnection);
-	connect(this, SIGNAL(seekSignalThreaded(qint64)), SLOT(seekSlotThreaded(qint64)), Qt::QueuedConnection);
-	qRegisterMetaType<MediaSource>("MediaSource");
-	connect(this, SIGNAL(setSourceSignalThreaded(const MediaSource &)), SLOT(setSourceSlotThreaded(const MediaSource &)), Qt::QueuedConnection);
-
-	start();
+	connect(_vlcMediaObject, SIGNAL(finished()),
+		SIGNAL(finished()));
 }
 
 MediaObject::~MediaObject() {
 	delete _vlcMediaObject;
 }
 
-void MediaObject::run() {
-	exec();
-}
-
 void MediaObject::play() {
-	emit playSignalThreaded();
-}
-
-void MediaObject::playSlotThreaded() {
 	switch (_mediaSource.type()) {
 
 	case MediaSource::Invalid:
@@ -139,26 +122,14 @@ void MediaObject::resume() {
 }
 
 void MediaObject::pause() {
-	emit pauseSignalThreaded();
-}
-
-void MediaObject::pauseSlotThreaded() {
 	_vlcMediaObject->pause();
 }
 
 void MediaObject::stop() {
-	emit stopSignalThreaded();
-}
-
-void MediaObject::stopSlotThreaded() {
 	_vlcMediaObject->stop();
 }
 
 void MediaObject::seek(qint64 milliseconds) {
-	emit seekSignalThreaded(milliseconds);
-}
-
-void MediaObject::seekSlotThreaded(qint64 milliseconds) {
 	_vlcMediaObject->seek(milliseconds);
 }
 
@@ -218,10 +189,6 @@ MediaSource MediaObject::source() const {
 }
 
 void MediaObject::setSource(const MediaSource & source) {
-	emit setSourceSignalThreaded(source);
-}
-
-void MediaObject::setSourceSlotThreaded(const MediaSource & source) {
 	_mediaSource = source;
 
 	switch (source.type()) {

@@ -22,7 +22,7 @@
 #include <phonon/mediaobjectinterface.h>
 #include <phonon/addoninterface.h>
 
-#include <QtCore/QThread>
+#include <QtCore/QObject>
 
 namespace Phonon
 {
@@ -36,7 +36,7 @@ class VLCMediaObject;
  *
  * @author Tanguy Krotoff
  */
-class MediaObject : public QThread, public MediaObjectInterface, public AddonInterface {
+class MediaObject : public QObject, public MediaObjectInterface, public AddonInterface {
 	Q_OBJECT
 	Q_INTERFACES(Phonon::MediaObjectInterface Phonon::AddonInterface)
 public:
@@ -78,10 +78,9 @@ public:
 signals:
 
 	//void aboutToFinish()
-	//void finished();
 	//void bufferStatus(int percentFilled);
 	void currentSourceChanged(const MediaSource & newSource);
-	//void finished()
+	void finished();
 	//void hasVideoChanged(bool hasVideo);
 	void metaDataChanged(const QMultiMap<QString, QString> & metaData);
 	//void prefinishMarkReached(qint32 msecToEnd);
@@ -90,33 +89,11 @@ signals:
 	void tick(qint64 time);
 	void totalTimeChanged(qint64 newTotalTime);
 
-signals:
-
-	//All threaded signals
-
-	void playSignalThreaded();
-	void pauseSignalThreaded();
-	void stopSignalThreaded();
-	void seekSignalThreaded(qint64 milliseconds);
-	void setSourceSignalThreaded(const MediaSource & source);
-
-private slots:
-
-	//All threaded slots
-
-	void playSlotThreaded();
-	void pauseSlotThreaded();
-	void stopSlotThreaded();
-	void seekSlotThreaded(qint64 milliseconds);
-	void setSourceSlotThreaded(const MediaSource & source);
-
 private slots:
 
 	void stateChangedInternal(Phonon::State newState);
 
 private:
-
-	void run();
 
 	void loadMediaInternal(const QString & filename);
 	void playInternal(const QString & filename);
