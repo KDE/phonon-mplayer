@@ -82,15 +82,16 @@ void VLCMediaObject::loadMedia(const QString & filename) {
 
 	qDebug() << "duration:" << p_libvlc_media_get_duration(_vlcMedia, _vlcException);
 
-	//updateMetaData();
-	emit stateChanged(Phonon::StoppedState);
+	updateMetaData();
+
+	//emit stateChanged(Phonon::StoppedState);
 }
 
 void VLCMediaObject::play() {
 	//Get our media player to use our window
 	//FIXME This code does not work inside libvlc!!!
 	//Check VideoWidget.cpp p_libvlc_video_set_parent()
-	p_libvlc_media_player_set_drawable(_vlcMediaPlayer, _vlcMediaPlayerWidgetId, _vlcException);
+	//p_libvlc_media_player_set_drawable(_vlcMediaPlayer, _vlcMediaPlayerWidgetId, _vlcException);
 	checkException();
 
 	//Play
@@ -126,31 +127,39 @@ Phonon::State VLCMediaObject::state() const {
 
 	switch (st) {
 	case libvlc_NothingSpecial:
+		qDebug() << "state=libvlc_NothingSpecial";
 		state = Phonon::LoadingState;
 		break;
 	case libvlc_Stopped:
+		qDebug() << "state=libvlc_Stopped";
 		state = Phonon::StoppedState;
 		break;
 	case libvlc_Opening:
+		qDebug() << "state=libvlc_Opening";
 		state = Phonon::LoadingState;
 		break;
 	case libvlc_Buffering:
+		qDebug() << "state=libvlc_Buffering";
 		state = Phonon::BufferingState;
 		break;
 	case libvlc_Ended:
+		qDebug() << "state=libvlc_Ended";
 		state = Phonon::StoppedState;
 		break;
 	case libvlc_Error:
+		qDebug() << "state=libvlc_Error";
 		state = Phonon::ErrorState;
 		break;
 	case libvlc_Playing:
+		qDebug() << "state=libvlc_Playing";
 		state = Phonon::PlayingState;
 		break;
 	case libvlc_Paused:
+		qDebug() << "state=libvlc_Paused";
 		state = Phonon::PausedState;
 		break;
 	default:
-		qCritical() << "error: unknown VLC state=" << st;
+		qCritical() << __FUNCTION__ << "error: unknown VLC state:" << st;
 		break;
 	}
 
@@ -202,6 +211,7 @@ void VLCMediaObject::connectToAllVLCEvents() {
 		libvlc_MediaMetaChanged,
 		libvlc_MediaSubItemAdded,
 		libvlc_MediaDurationChanged,
+		//FIXME libvlc does not know this event
 		//libvlc_MediaPreparsedChanged,
 		libvlc_MediaFreed,
 		libvlc_MediaStateChanged,
@@ -280,6 +290,8 @@ void VLCMediaObject::connectToAllVLCEvents() {
 void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_data) {
 	VLCMediaObject * vlcMediaObject = (VLCMediaObject *) user_data;
 
+	vlcMediaObject->state();
+
 	qDebug() << "event=" << (int) vlcMediaObject << p_libvlc_event_type_name(event->type);
 
 	if (event->type == libvlc_MediaPlayerTimeChanged) {
@@ -339,18 +351,16 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 
 		emit vlcMediaObject->totalTimeChanged(event->u.media_duration_changed.new_duration / 1000);
 		//emit vlcMediaObject->tick(vlcMediaObject->totalTime());
+
+		vlcMediaObject->updateMetaData();
 	}
 
 	if (event->type == libvlc_MediaMetaChanged) {
-		vlcMediaObject->updateMetaData();
+		//vlcMediaObject->updateMetaData();
 	}
 }
 
 void VLCMediaObject::updateMetaData() {
-
-	qDebug() << "ARTIST:" << p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Artist, _vlcException);
-
-
 	//~ libvlc_meta_Title,
 	//~ libvlc_meta_Artist,
 	//~ libvlc_meta_Genre,
@@ -391,7 +401,12 @@ void VLCMediaObject::updateMetaData() {
 	metaDataMap.insert(QLatin1String("URL"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_URL, _vlcException)));
 	metaDataMap.insert(QLatin1String("ENCODEDBY"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_EncodedBy, _vlcException)));
 
+
+	qDebug() << "ARTIST:" << p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Artist, _vlcException);
+
+
 	emit metaDataChanged(metaDataMap);
+	emit stateChanged(Phonon::StoppedState);
 }
 
 qint64 VLCMediaObject::totalTime() const {

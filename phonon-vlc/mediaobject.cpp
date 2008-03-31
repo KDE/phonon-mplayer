@@ -99,9 +99,9 @@ void MediaObject::play() {
 
 void MediaObject::loadMediaInternal(const QString & filename) {
 	//Loads the media_instance
-	//_vlcMediaObject->loadMedia(filename);
+	_vlcMediaObject->loadMedia(filename);
 
-	//emit currentSourceChanged(_mediaSource);
+	emit currentSourceChanged(_mediaSource);
 }
 
 void MediaObject::playInternal(const QString & filename) {
@@ -111,7 +111,7 @@ void MediaObject::playInternal(const QString & filename) {
 
 	else {
 		//Play the media_instance
-		//loadMediaInternal(filename);
+		loadMediaInternal(filename);
 		_vlcMediaObject->loadMedia(filename);
 		_vlcMediaObject->play();
 	}
