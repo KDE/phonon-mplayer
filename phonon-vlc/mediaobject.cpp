@@ -38,13 +38,13 @@ MediaObject::MediaObject(QObject * parent)
 	qRegisterMetaType<QMultiMap<QString, QString> >("QMultiMap<QString, QString>");
 
 	connect(_vlcMediaObject, SIGNAL(tick(qint64)),
-		SIGNAL(tick(qint64)), Qt::QueuedConnection);
+		SIGNAL(tick(qint64)));
 	connect(_vlcMediaObject, SIGNAL(stateChanged(Phonon::State)),
-		SLOT(stateChangedInternal(Phonon::State)), Qt::QueuedConnection);
+		SLOT(stateChangedInternal(Phonon::State)));
 	connect(_vlcMediaObject, SIGNAL(totalTimeChanged(qint64)),
-		SIGNAL(totalTimeChanged(qint64)), Qt::QueuedConnection);
+		SIGNAL(totalTimeChanged(qint64)));
 	connect(_vlcMediaObject, SIGNAL(metaDataChanged(const QMultiMap<QString, QString> &)),
-		SIGNAL(metaDataChanged(const QMultiMap<QString, QString> &)), Qt::QueuedConnection);
+		SLOT(metaDataChangedInternal(const QMultiMap<QString, QString> &)));
 	connect(_vlcMediaObject, SIGNAL(finished()),
 		SIGNAL(finished()));
 }
@@ -274,6 +274,20 @@ void MediaObject::stateChangedInternal(Phonon::State newState) {
 	Phonon::State previousState = _currentState;
 	_currentState = newState;
 	emit stateChanged(_currentState, previousState);
+}
+
+void MediaObject::metaDataChangedInternal(const QMultiMap<QString, QString> & metaData) {
+	QString title = metaData.value("TITLE");
+	QString artist = metaData.value("ARTIST");
+	QString album = metaData.value("ALBUM");
+
+	qDebug() << "title:" << title;
+	qDebug() << "artist:" << artist;
+	qDebug() << "album:" << album;
+
+	emit metaDataChanged(metaData);
+
+	stateChangedInternal(Phonon::StoppedState);
 }
 
 }}	//Namespace Phonon::VLC

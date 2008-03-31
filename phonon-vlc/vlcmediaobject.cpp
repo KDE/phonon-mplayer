@@ -74,7 +74,7 @@ void VLCMediaObject::loadMedia(const QString & filename) {
 	checkException();
 
 	//No need to keep the media now
-	p_libvlc_media_release(_vlcMedia);
+	//p_libvlc_media_release(_vlcMedia);
 
 	//connectToAllVLCEvents() at the end since it needs _vlcMediaPlayer
 	connectToAllVLCEvents();
@@ -356,7 +356,6 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 		//libvlc_MediaDurationChanged is the last event we get after
 		//loading the file
 		vlcMediaObject->updateMetaData();
-		emit vlcMediaObject->stateChanged(Phonon::StoppedState);
 	}
 
 	if (event->type == libvlc_MediaMetaChanged) {

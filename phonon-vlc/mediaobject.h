@@ -93,6 +93,8 @@ private slots:
 
 	void stateChangedInternal(Phonon::State newState);
 
+	void metaDataChangedInternal(const QMultiMap<QString, QString> & metaData);
+
 private:
 
 	void loadMediaInternal(const QString & filename);
