@@ -32,7 +32,7 @@ endif (UNIX)
 
 if (WIN32)
 	set(QT_PHONON_LIBRARY_DEBUG
-		${QT_LIBRARY_DIR}/phonond4
+		${QT_LIBRARY_DIR}/phonond4.lib
 	)
 endif (WIN32)
 
