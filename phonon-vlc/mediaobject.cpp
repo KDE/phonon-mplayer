@@ -38,15 +38,15 @@ MediaObject::MediaObject(QObject * parent)
 	qRegisterMetaType<QMultiMap<QString, QString> >("QMultiMap<QString, QString>");
 
 	connect(_vlcMediaObject, SIGNAL(tick(qint64)),
-		SIGNAL(tick(qint64)));
+		SIGNAL(tick(qint64)), Qt::QueuedConnection);
 	connect(_vlcMediaObject, SIGNAL(stateChanged(Phonon::State)),
-		SLOT(stateChangedInternal(Phonon::State)));
+		SLOT(stateChangedInternal(Phonon::State)), Qt::QueuedConnection);
 	connect(_vlcMediaObject, SIGNAL(totalTimeChanged(qint64)),
-		SIGNAL(totalTimeChanged(qint64)));
+		SIGNAL(totalTimeChanged(qint64)), Qt::QueuedConnection);
 	connect(_vlcMediaObject, SIGNAL(metaDataChanged(const QMultiMap<QString, QString> &)),
-		SLOT(metaDataChangedInternal(const QMultiMap<QString, QString> &)));
+		SLOT(metaDataChangedInternal(const QMultiMap<QString, QString> &)), Qt::QueuedConnection);
 	connect(_vlcMediaObject, SIGNAL(finished()),
-		SIGNAL(finished()));
+		SIGNAL(finished()), Qt::QueuedConnection);
 }
 
 MediaObject::~MediaObject() {
@@ -111,7 +111,6 @@ void MediaObject::playInternal(const QString & filename) {
 	}
 
 	else {
-		loadMediaInternal(filename);
 		//Play the libvlc_media
 		_vlcMediaObject->play();
 	}

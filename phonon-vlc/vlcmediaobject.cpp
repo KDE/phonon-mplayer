@@ -21,6 +21,7 @@
 #include "vlcloader.h"
 #include "vlc_symbols.h"
 
+#include <QtCore/QTimer>
 #include <QtCore/QtDebug>
 
 namespace Phonon
@@ -57,16 +58,41 @@ VLCMediaObject::VLCMediaObject(QObject * parent)
 	//MediaDiscoverer
 	_vlcMediaDiscoverer = NULL;
 	_vlcMediaDiscovererEventManager = NULL;
+
+	_waitForStopEventBeforePlaying = false;
 }
 
 VLCMediaObject::~VLCMediaObject() {
+	unloadMedia();
+}
+
+void VLCMediaObject::unloadMedia() {
+	if (!_vlcMediaPlayer) {
+		p_libvlc_media_player_release(_vlcMediaPlayer);
+		_vlcMediaPlayer = NULL;
+	}
+
+	if (!_vlcMedia) {
+		p_libvlc_media_release(_vlcMedia);
+		_vlcMedia = NULL;
+	}
 }
 
 void VLCMediaObject::loadMedia(const QString & filename) {
-	qDebug() << "VLCMediaObject::loadMedia:" << filename;
+	_filename = filename;
+	loadMediaInternal();
+}
+
+void VLCMediaObject::loadMediaInternal() {
+	if (_waitForStopEventBeforePlaying) {
+		QTimer::singleShot(200, this, SLOT(loadMediaInternal()));
+		return;
+	}
+
+	qDebug() << (int) this << "loadMediaInternal:" << _filename;
 
 	//Create a new media from a filename
-	_vlcMedia = p_libvlc_media_new(_vlcInstance, filename.toAscii(), _vlcException);
+	_vlcMedia = p_libvlc_media_new(_vlcInstance, _filename.toAscii(), _vlcException);
 	checkException();
 
 	//Create a media player environement
@@ -74,7 +100,7 @@ void VLCMediaObject::loadMedia(const QString & filename) {
 	checkException();
 
 	//No need to keep the media now
-	//p_libvlc_media_release(_vlcMedia);
+	p_libvlc_media_release(_vlcMedia);
 
 	//connectToAllVLCEvents() at the end since it needs _vlcMediaPlayer
 	connectToAllVLCEvents();
@@ -97,6 +123,8 @@ void VLCMediaObject::play() {
 	//p_libvlc_media_player_set_drawable(_vlcMediaPlayer, _vlcMediaPlayerWidgetId, _vlcException);
 	//checkException();
 
+	_vlcCurrentMediaPlayer = _vlcMediaPlayer;
+
 	//Play
 	p_libvlc_media_player_play(_vlcMediaPlayer, _vlcException);
 	checkException();
@@ -108,8 +136,13 @@ void VLCMediaObject::pause() {
 }
 
 void VLCMediaObject::stop() {
-	p_libvlc_media_player_stop(_vlcMediaPlayer, _vlcException);
-	checkException();
+	Phonon::State st = state();
+	if (st == Phonon::PlayingState || st == Phonon::PausedState) {
+		_waitForStopEventBeforePlaying = true;
+		p_libvlc_media_player_stop(_vlcMediaPlayer, _vlcException);
+		checkException();
+		unloadMedia();
+	}
 }
 
 void VLCMediaObject::seek(qint64 milliseconds) {
@@ -295,7 +328,7 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 
 	vlcMediaObject->state();
 
-	qDebug() << "event=" << (int) vlcMediaObject << p_libvlc_event_type_name(event->type);
+	qDebug() << (int) vlcMediaObject << "event=" << p_libvlc_event_type_name(event->type);
 
 	if (event->type == libvlc_MediaPlayerTimeChanged) {
 		//new_time / VLC_POSITION_RESOLUTION since VLC adds * VLC_POSITION_RESOLUTION, don't know why...
@@ -332,14 +365,17 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 	}
 
 	if (event->type == libvlc_MediaPlayerPaused) {
+		vlcMediaObject->_waitForStopEventBeforePlaying = false;
 		emit vlcMediaObject->stateChanged(Phonon::PausedState);
 	}
 
 	if (event->type == libvlc_MediaPlayerEndReached) {
+		vlcMediaObject->_waitForStopEventBeforePlaying = false;
 		emit vlcMediaObject->stateChanged(Phonon::StoppedState);
 	}
 
 	if (event->type == libvlc_MediaPlayerStopped) {
+		vlcMediaObject->_waitForStopEventBeforePlaying = false;
 		emit vlcMediaObject->stateChanged(Phonon::StoppedState);
 	}
 

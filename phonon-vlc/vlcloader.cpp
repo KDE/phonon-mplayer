@@ -28,7 +28,7 @@
 
 libvlc_instance_t * _vlcInstance = NULL;
 libvlc_exception_t * _vlcException = new libvlc_exception_t();
-libvlc_media_player_t * _vlcMediaPlayer = NULL;
+libvlc_media_player_t * _vlcCurrentMediaPlayer = NULL;
 libvlc_drawable_t _vlcMediaPlayerWidgetId = 0;
 
 namespace Phonon

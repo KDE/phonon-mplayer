@@ -78,6 +78,10 @@ signals:
 	void tick(qint64 time);
 	void totalTimeChanged(qint64 newTotalTime);
 
+private slots:
+
+	void loadMediaInternal();
+
 private:
 
 	/**
@@ -97,12 +101,17 @@ private:
 	 *
 	 * Receives all vlc events.
 	 *
+	 * Warning: owns by libvlc thread.
+	 *
 	 * @see connectToAllVLCEvents()
 	 * @see libvlc_event_attach()
 	 */
 	static void libvlc_callback(const libvlc_event_t * event, void * user_data);
 
+	void unloadMedia();
+
 	//MediaPlayer
+	libvlc_media_player_t * _vlcMediaPlayer;
 	libvlc_event_manager_t * _vlcMediaPlayerEventManager;
 
 	//Media
@@ -124,6 +133,10 @@ private:
 	//MediaDiscoverer
 	libvlc_media_discoverer_t * _vlcMediaDiscoverer;
 	libvlc_event_manager_t * _vlcMediaDiscovererEventManager;
+
+	bool _waitForStopEventBeforePlaying;
+
+	QString _filename;
 };
 
 }}	//Namespace Phonon::VLC
