@@ -84,12 +84,7 @@ void VLCMediaObject::loadMedia(const QString & filename) {
 }
 
 void VLCMediaObject::loadMediaInternal() {
-	if (_waitForStopEventBeforePlaying) {
-		QTimer::singleShot(200, this, SLOT(loadMediaInternal()));
-		return;
-	}
-
-	qDebug() << (int) this << "loadMediaInternal:" << _filename;
+	qDebug() << (int) this << "loadMediaInternal()" << _filename;
 
 	//Create a new media from a filename
 	_vlcMedia = p_libvlc_media_new(_vlcInstance, _filename.toAscii(), _vlcException);
@@ -108,8 +103,7 @@ void VLCMediaObject::loadMediaInternal() {
 
 	//In order to get duration and other meta infos, we first need to call
 	//libvlc_media_get_duration() that will give us the event: libvlc_MediaDurationChanged
-	qint64 duration = p_libvlc_media_get_duration(_vlcMedia, _vlcException);
-	checkException();
+	qint64 duration = totalTime();
 	qDebug() << "duration:" << duration;
 	QString artist = p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Artist, _vlcException);
 	checkException();
@@ -141,11 +135,12 @@ void VLCMediaObject::stop() {
 		_waitForStopEventBeforePlaying = true;
 		p_libvlc_media_player_stop(_vlcMediaPlayer, _vlcException);
 		checkException();
-		unloadMedia();
+		//unloadMedia();
 	}
 }
 
 void VLCMediaObject::seek(qint64 milliseconds) {
+	qDebug() << (int) this << "seek() milliseconds:" << milliseconds;
 	p_libvlc_media_player_set_time(_vlcMediaPlayer, milliseconds, _vlcException);
 	checkException();
 }
@@ -326,9 +321,7 @@ void VLCMediaObject::connectToAllVLCEvents() {
 void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_data) {
 	VLCMediaObject * vlcMediaObject = (VLCMediaObject *) user_data;
 
-	vlcMediaObject->state();
-
-	qDebug() << (int) vlcMediaObject << "event=" << p_libvlc_event_type_name(event->type);
+	qDebug() << (int) vlcMediaObject << "event:" << p_libvlc_event_type_name(event->type);
 
 	if (event->type == libvlc_MediaPlayerTimeChanged) {
 		//new_time / VLC_POSITION_RESOLUTION since VLC adds * VLC_POSITION_RESOLUTION, don't know why...
@@ -450,6 +443,7 @@ qint64 VLCMediaObject::totalTime() const {
 	libvlc_time_t time = p_libvlc_media_get_duration(_vlcMedia, _vlcException);
 	checkException();
 
+	time = time / VLC_POSITION_RESOLUTION;
 	qDebug() << "totalTime:" << time;
 
 	return time;

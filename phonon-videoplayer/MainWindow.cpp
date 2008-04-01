@@ -100,6 +100,8 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::addFiles() {
+	qDebug() << "MainWindow::addFiles()";
+
 	QStringList files = QFileDialog::getOpenFileNames(this, tr("Select Audio/Video Files"));
 
 	if (files.isEmpty()) {
@@ -107,8 +109,8 @@ void MainWindow::addFiles() {
 	}
 
 	int index = _mediaSources.size();
-	foreach (QString string, files) {
-		Phonon::MediaSource source(string);
+	foreach (QString file, files) {
+		Phonon::MediaSource source(file);
 		_mediaSources.append(source);
 	}
 
@@ -136,6 +138,8 @@ void MainWindow::about() {
 }
 
 void MainWindow::stateChanged(Phonon::State newState, Phonon::State oldState) {
+	qDebug() << "MainWindow::stateChanged()";
+
 	switch (newState) {
 	case Phonon::ErrorState:
 		if (_mediaObject->errorType() == Phonon::FatalError) {
@@ -189,8 +193,8 @@ void MainWindow::stateChanged(Phonon::State newState, Phonon::State oldState) {
 }
 
 void MainWindow::tick(qint64 time) {
-	qDebug() << "MainWindow::tick time=" << time;
-	qDebug() << "MainWindow::tick totalTime=" << _mediaObject->totalTime();
+	qDebug() << "MainWindow::tick() time=" << time;
+	qDebug() << "MainWindow::tick() totalTime=" << _mediaObject->totalTime();
 
 	QTime displayTime(0, (time / 60000) % 60, (time / 1000) % 60);
 
@@ -218,7 +222,7 @@ void MainWindow::sourceChanged(const Phonon::MediaSource & source) {
 }
 
 void MainWindow::metaStateChanged(Phonon::State newState, Phonon::State oldState) {
-	qDebug() << "metaStateChanged";
+	qDebug() << "MainWindow::metaStateChanged()";
 
 	if (newState == Phonon::ErrorState) {
 		QMessageBox::warning(this, tr("Error opening files"),
