@@ -40,7 +40,10 @@ MainWindow::MainWindow() {
 	Phonon::createPath(_mediaObject, _audioOutput);
 
 	//Phonon objects connect
-	connect(_mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
+	connect(_mediaObject, SIGNAL(tick(qint64)),
+		SLOT(tick(qint64)));
+	connect(_mediaObject, SIGNAL(totalTimeChanged(qint64)),
+		SLOT(totalTimeChanged(qint64)));
 	connect(_mediaObject, SIGNAL(stateChanged(Phonon::State, Phonon::State)),
 		SLOT(stateChanged(Phonon::State, Phonon::State)));
 	connect(_metaObjectInfoResolver, SIGNAL(stateChanged(Phonon::State, Phonon::State)),
@@ -74,8 +77,11 @@ MainWindow::MainWindow() {
 	_volumeSlider->setAudioOutput(_audioOutput);
 	_volumeSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
-	//lcdNumber
-	lcdNumber->display("00:00");
+	//currentTimeLcdNumber
+	currentTimeLcdNumber->display("00:00");
+
+	//totalTimeLcdNumber
+	totalTimeLcdNumber->display("00:00");
 
 	//Hacking into the backend...
 	QObject * backend = Phonon::Factory::backend();
@@ -165,7 +171,7 @@ void MainWindow::stateChanged(Phonon::State newState, Phonon::State oldState) {
 		actionStop->setEnabled(false);
 		actionPlay->setEnabled(true);
 		actionPause->setEnabled(false);
-		lcdNumber->display("00:00");
+		currentTimeLcdNumber->display("00:00");
 		break;
 
 	case Phonon::PausedState:
@@ -193,12 +199,13 @@ void MainWindow::stateChanged(Phonon::State newState, Phonon::State oldState) {
 }
 
 void MainWindow::tick(qint64 time) {
-	qDebug() << "MainWindow::tick() time=" << time;
-	qDebug() << "MainWindow::tick() totalTime=" << _mediaObject->totalTime();
+	QTime displayTime(NULL, (time / 60000) % 60, (time / 1000) % 60);
+	currentTimeLcdNumber->display(displayTime.toString("mm:ss"));
+}
 
-	QTime displayTime(0, (time / 60000) % 60, (time / 1000) % 60);
-
-	lcdNumber->display(displayTime.toString("mm:ss"));
+void MainWindow::totalTimeChanged(qint64 newTotalTime) {
+	QTime displayTime(NULL, (newTotalTime / 60000) % 60, (newTotalTime / 1000) % 60);
+	totalTimeLcdNumber->display(displayTime.toString("mm:ss"));
 }
 
 void MainWindow::tableClicked(int row, int column) {
@@ -218,7 +225,7 @@ void MainWindow::tableClicked(int row, int column) {
 
 void MainWindow::sourceChanged(const Phonon::MediaSource & source) {
 	tableWidget->selectRow(_mediaSources.indexOf(source));
-	lcdNumber->display("00:00");
+	currentTimeLcdNumber->display("00:00");
 }
 
 void MainWindow::metaStateChanged(Phonon::State newState, Phonon::State oldState) {
@@ -248,7 +255,6 @@ void MainWindow::metaStateChanged(Phonon::State newState, Phonon::State oldState
 		title = _metaObjectInfoResolver->currentSource().fileName();
 	}
 
-	qDebug() << "MainWindow::updateMetaData()";
 	int currentRow = tableWidget->rowCount();
 	tableWidget->insertRow(currentRow);
 	tableWidget->setItem(currentRow, 0, new QTableWidgetItem(title));
@@ -258,7 +264,7 @@ void MainWindow::metaStateChanged(Phonon::State newState, Phonon::State oldState
 
 	if (tableWidget->selectedItems().isEmpty()) {
 		tableWidget->selectRow(0);
-		//_mediaObject->setCurrentSource(_metaObjectInfoResolver->currentSource());
+		_mediaObject->setCurrentSource(_metaObjectInfoResolver->currentSource());
 	}
 
 	Phonon::MediaSource source = _metaObjectInfoResolver->currentSource();

@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>455</width>
-    <height>555</height>
+    <width>493</width>
+    <height>498</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -21,8 +21,8 @@
     <rect>
      <x>0</x>
      <y>53</y>
-     <width>455</width>
-     <height>483</height>
+     <width>493</width>
+     <height>426</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout" >
@@ -64,7 +64,10 @@
     <item row="1" column="0" >
      <layout class="QHBoxLayout" name="seekerLayout" >
       <item>
-       <widget class="QLCDNumber" name="lcdNumber" />
+       <widget class="QLCDNumber" name="currentTimeLcdNumber" />
+      </item>
+      <item>
+       <widget class="QLCDNumber" name="totalTimeLcdNumber" />
       </item>
      </layout>
     </item>
@@ -94,7 +97,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>455</width>
+     <width>493</width>
      <height>19</height>
     </rect>
    </property>
@@ -128,8 +131,8 @@
    <property name="geometry" >
     <rect>
      <x>0</x>
-     <y>536</y>
-     <width>455</width>
+     <y>479</y>
+     <width>493</width>
      <height>19</height>
     </rect>
    </property>
@@ -139,7 +142,7 @@
     <rect>
      <x>0</x>
      <y>19</y>
-     <width>455</width>
+     <width>493</width>
      <height>34</height>
     </rect>
    </property>

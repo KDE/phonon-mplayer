@@ -53,6 +53,7 @@ private slots:
 
 	void stateChanged(Phonon::State newState, Phonon::State oldState);
 	void tick(qint64 time);
+	void totalTimeChanged(qint64 newTotalTime);
 	void sourceChanged(const Phonon::MediaSource & source);
 	void metaStateChanged(Phonon::State newState, Phonon::State oldState);
 	void tableClicked(int row, int column);

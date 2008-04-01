@@ -78,10 +78,6 @@ signals:
 	void tick(qint64 time);
 	void totalTimeChanged(qint64 newTotalTime);
 
-private slots:
-
-	void loadMediaInternal();
-
 private:
 
 	/**
@@ -134,9 +130,7 @@ private:
 	libvlc_media_discoverer_t * _vlcMediaDiscoverer;
 	libvlc_event_manager_t * _vlcMediaDiscovererEventManager;
 
-	bool _waitForStopEventBeforePlaying;
-
-	QString _filename;
+	qint64 _totalTime;
 };
 
 }}	//Namespace Phonon::VLC

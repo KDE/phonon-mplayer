@@ -59,7 +59,7 @@ VLCMediaObject::VLCMediaObject(QObject * parent)
 	_vlcMediaDiscoverer = NULL;
 	_vlcMediaDiscovererEventManager = NULL;
 
-	_waitForStopEventBeforePlaying = false;
+	_totalTime = 0;
 }
 
 VLCMediaObject::~VLCMediaObject() {
@@ -79,15 +79,10 @@ void VLCMediaObject::unloadMedia() {
 }
 
 void VLCMediaObject::loadMedia(const QString & filename) {
-	_filename = filename;
-	loadMediaInternal();
-}
-
-void VLCMediaObject::loadMediaInternal() {
-	qDebug() << (int) this << "loadMediaInternal()" << _filename;
+	qDebug() << (int) this << "loadMedia()" << filename;
 
 	//Create a new media from a filename
-	_vlcMedia = p_libvlc_media_new(_vlcInstance, _filename.toAscii(), _vlcException);
+	_vlcMedia = p_libvlc_media_new(_vlcInstance, filename.toAscii(), _vlcException);
 	checkException();
 
 	//Create a media player environement
@@ -126,7 +121,6 @@ void VLCMediaObject::pause() {
 void VLCMediaObject::stop() {
 	Phonon::State st = state();
 	if (st == Phonon::PlayingState || st == Phonon::PausedState) {
-		_waitForStopEventBeforePlaying = true;
 		p_libvlc_media_player_stop(_vlcMediaPlayer, _vlcException);
 		checkException();
 		//unloadMedia();
@@ -352,17 +346,14 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 	}
 
 	if (event->type == libvlc_MediaPlayerPaused) {
-		vlcMediaObject->_waitForStopEventBeforePlaying = false;
 		emit vlcMediaObject->stateChanged(Phonon::PausedState);
 	}
 
 	if (event->type == libvlc_MediaPlayerEndReached) {
-		vlcMediaObject->_waitForStopEventBeforePlaying = false;
 		emit vlcMediaObject->stateChanged(Phonon::StoppedState);
 	}
 
 	if (event->type == libvlc_MediaPlayerStopped) {
-		vlcMediaObject->_waitForStopEventBeforePlaying = false;
 		emit vlcMediaObject->stateChanged(Phonon::StoppedState);
 	}
 
@@ -373,7 +364,10 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 		qDebug() << "new_duration:" << event->u.media_duration_changed.new_duration / 1000;
 
 		//emit vlcMediaObject->totalTimeChanged(event->u.media_duration_changed.new_duration / 1000);
-		emit vlcMediaObject->totalTimeChanged(vlcMediaObject->totalTime());
+		qint64 totalTime = vlcMediaObject->totalTime();
+		if (totalTime != vlcMediaObject->_totalTime) {
+			emit vlcMediaObject->totalTimeChanged(totalTime);
+		}
 
 		//We have finished to load the meta data from the file
 		//libvlc_MediaDurationChanged is the last event we get after
