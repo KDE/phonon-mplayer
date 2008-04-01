@@ -95,19 +95,13 @@ void VLCMediaObject::loadMediaInternal() {
 	checkException();
 
 	//No need to keep the media now
-	p_libvlc_media_release(_vlcMedia);
+	//p_libvlc_media_release(_vlcMedia);
 
 	//connectToAllVLCEvents() at the end since it needs _vlcMediaPlayer
 	connectToAllVLCEvents();
 
-
-	//In order to get duration and other meta infos, we first need to call
-	//libvlc_media_get_duration() that will give us the event: libvlc_MediaDurationChanged
-	qint64 duration = totalTime();
-	qDebug() << "duration:" << duration;
-	QString artist = p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Artist, _vlcException);
-	checkException();
-	qDebug() << "artist:" << artist;
+	//Gets meta data (artist, title...)
+	updateMetaData();
 }
 
 void VLCMediaObject::play() {
@@ -384,12 +378,13 @@ void VLCMediaObject::libvlc_callback(const libvlc_event_t * event, void * user_d
 		//We have finished to load the meta data from the file
 		//libvlc_MediaDurationChanged is the last event we get after
 		//loading the file
-		vlcMediaObject->updateMetaData();
+		//vlcMediaObject->updateMetaData();
 	}
 
 	if (event->type == libvlc_MediaMetaChanged) {
-		//Don't do updateMetaData() since all meta data are not loaded
-		//vlcMediaObject->updateMetaData();
+		QString meta = p_libvlc_media_get_meta(vlcMediaObject->_vlcMedia, event->u.media_meta_changed.meta_type, _vlcException);
+		checkException();
+		qDebug() << "libvlc_MediaMetaChanged: META:" << meta;
 	}
 }
 
@@ -423,18 +418,28 @@ void VLCMediaObject::updateMetaData() {
 	QMultiMap<QString, QString> metaDataMap;
 
 	metaDataMap.insert(QLatin1String("ARTIST"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Artist, _vlcException)));
+	checkException();
 	metaDataMap.insert(QLatin1String("ALBUM"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Album, _vlcException)));
+	checkException();
 	metaDataMap.insert(QLatin1String("TITLE"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Title, _vlcException)));
+	checkException();
 	metaDataMap.insert(QLatin1String("DATE"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Date, _vlcException)));
+	checkException();
 	metaDataMap.insert(QLatin1String("GENRE"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Genre, _vlcException)));
+	checkException();
 	metaDataMap.insert(QLatin1String("TRACKNUMBER"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_TrackNumber, _vlcException)));
+	checkException();
 	metaDataMap.insert(QLatin1String("DESCRIPTION"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Description, _vlcException)));
+	checkException();
 
 	metaDataMap.insert(QLatin1String("COPYRIGHT"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_TrackNumber, _vlcException)));
+	checkException();
 	metaDataMap.insert(QLatin1String("URL"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_URL, _vlcException)));
+	checkException();
 	metaDataMap.insert(QLatin1String("ENCODEDBY"), QString::fromUtf8(p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_EncodedBy, _vlcException)));
 
-	qDebug() << "ARTIST:" << p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Artist, _vlcException);
+	qDebug() << "updateMetaData(): artist:" << p_libvlc_media_get_meta(_vlcMedia, libvlc_meta_Artist, _vlcException);
+	checkException();
 
 	emit metaDataChanged(metaDataMap);
 }

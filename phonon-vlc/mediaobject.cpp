@@ -276,14 +276,6 @@ void MediaObject::stateChangedInternal(Phonon::State newState) {
 }
 
 void MediaObject::metaDataChangedInternal(const QMultiMap<QString, QString> & metaData) {
-	QString title = metaData.value("TITLE");
-	QString artist = metaData.value("ARTIST");
-	QString album = metaData.value("ALBUM");
-
-	qDebug() << "title:" << title;
-	qDebug() << "artist:" << artist;
-	qDebug() << "album:" << album;
-
 	emit metaDataChanged(metaData);
 
 	stateChangedInternal(Phonon::StoppedState);

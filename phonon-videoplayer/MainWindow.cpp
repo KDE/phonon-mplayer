@@ -248,6 +248,7 @@ void MainWindow::metaStateChanged(Phonon::State newState, Phonon::State oldState
 		title = _metaObjectInfoResolver->currentSource().fileName();
 	}
 
+	qDebug() << "MainWindow::updateMetaData()";
 	int currentRow = tableWidget->rowCount();
 	tableWidget->insertRow(currentRow);
 	tableWidget->setItem(currentRow, 0, new QTableWidgetItem(title));
@@ -257,7 +258,7 @@ void MainWindow::metaStateChanged(Phonon::State newState, Phonon::State oldState
 
 	if (tableWidget->selectedItems().isEmpty()) {
 		tableWidget->selectRow(0);
-		_mediaObject->setCurrentSource(_metaObjectInfoResolver->currentSource());
+		//_mediaObject->setCurrentSource(_metaObjectInfoResolver->currentSource());
 	}
 
 	Phonon::MediaSource source = _metaObjectInfoResolver->currentSource();
