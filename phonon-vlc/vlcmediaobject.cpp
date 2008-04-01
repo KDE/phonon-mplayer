@@ -67,12 +67,12 @@ VLCMediaObject::~VLCMediaObject() {
 }
 
 void VLCMediaObject::unloadMedia() {
-	if (!_vlcMediaPlayer) {
+	if (_vlcMediaPlayer) {
 		p_libvlc_media_player_release(_vlcMediaPlayer);
 		_vlcMediaPlayer = NULL;
 	}
 
-	if (!_vlcMedia) {
+	if (_vlcMedia) {
 		p_libvlc_media_release(_vlcMedia);
 		_vlcMedia = NULL;
 	}
