@@ -21,6 +21,8 @@
 
 #include <vlc/libvlc.h>
 
+#include <QtCore/QFuture>
+
 /** Libvlc instance global variable. */
 extern libvlc_instance_t * _vlcInstance;
 
@@ -32,6 +34,9 @@ extern libvlc_media_player_t * _vlcCurrentMediaPlayer;
 
 /** Libvlc widget id global variable, where vlc will show images/movies. */
 extern libvlc_drawable_t _vlcMediaPlayerWidgetId;
+
+/** QFuture permits to run initLibVLC() in another thread. */
+extern QFuture<void> _initLibVLCFuture;
 
 namespace Phonon
 {

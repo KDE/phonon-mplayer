@@ -81,10 +81,10 @@ signals:
 	//void bufferStatus(int percentFilled);
 	void currentSourceChanged(const MediaSource & newSource);
 	void finished();
-	//void hasVideoChanged(bool hasVideo);
+	void hasVideoChanged(bool hasVideo);
 	void metaDataChanged(const QMultiMap<QString, QString> & metaData);
 	//void prefinishMarkReached(qint32 msecToEnd);
-	//void seekableChanged(bool isSeekable);
+	void seekableChanged(bool isSeekable);
 	void stateChanged(Phonon::State newState, Phonon::State oldState);
 	void tick(qint64 time);
 	void totalTimeChanged(qint64 newTotalTime);

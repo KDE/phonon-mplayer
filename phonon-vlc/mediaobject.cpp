@@ -47,6 +47,10 @@ MediaObject::MediaObject(QObject * parent)
 		SLOT(metaDataChangedInternal(const QMultiMap<QString, QString> &)), Qt::QueuedConnection);
 	connect(_vlcMediaObject, SIGNAL(finished()),
 		SIGNAL(finished()), Qt::QueuedConnection);
+	connect(_vlcMediaObject, SIGNAL(hasVideoChanged(bool)),
+		SIGNAL(hasVideoChanged(bool)), Qt::QueuedConnection);
+	connect(_vlcMediaObject, SIGNAL(seekableChanged(bool)),
+		SIGNAL(seekableChanged(bool)), Qt::QueuedConnection);
 }
 
 MediaObject::~MediaObject() {

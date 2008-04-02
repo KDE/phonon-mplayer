@@ -70,10 +70,10 @@ signals:
 	//void bufferStatus(int percentFilled);
 	//void currentSourceChanged(const Phonon::MediaSource & newSource);
 	void finished();
-	//void hasVideoChanged(bool hasVideo);
+	void hasVideoChanged(bool hasVideo);
 	void metaDataChanged(const QMultiMap<QString, QString> & metaData);
 	//void prefinishMarkReached(qint32 msecToEnd);
-	//void seekableChanged(bool isSeekable);
+	void seekableChanged(bool isSeekable);
 	void stateChanged(Phonon::State newState);
 	void tick(qint64 time);
 	void totalTimeChanged(qint64 newTotalTime);
@@ -106,6 +106,8 @@ private:
 
 	void unloadMedia();
 
+	void setVLCWidgetId();
+
 	//MediaPlayer
 	libvlc_media_player_t * _vlcMediaPlayer;
 	libvlc_event_manager_t * _vlcMediaPlayerEventManager;
@@ -114,23 +116,15 @@ private:
 	libvlc_media_t * _vlcMedia;
 	libvlc_event_manager_t * _vlcMediaEventManager;
 
-	//MediaList
-	libvlc_media_list_t * _vlcMediaList;
-	libvlc_event_manager_t * _vlcMediaListEventManager;
-
-	//MediaListView
-	libvlc_media_list_view_t * _vlcMediaListView;
-	libvlc_event_manager_t * _vlcMediaListViewEventManager;
-
-	//MediaListPlayer
-	libvlc_media_list_player_t * _vlcMediaListPlayer;
-	libvlc_event_manager_t * _vlcMediaListPlayerEventManager;
-
 	//MediaDiscoverer
 	libvlc_media_discoverer_t * _vlcMediaDiscoverer;
 	libvlc_event_manager_t * _vlcMediaDiscovererEventManager;
 
 	qint64 _totalTime;
+
+	bool _hasVideo;
+
+	bool _seekable;
 };
 
 }}	//Namespace Phonon::VLC

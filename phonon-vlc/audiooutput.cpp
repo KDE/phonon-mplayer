@@ -46,8 +46,10 @@ qreal AudioOutput::volume() const {
 }
 
 void AudioOutput::setVolume(qreal volume) {
-	p_libvlc_audio_set_volume(_vlcInstance, volume * 100, _vlcException);
-	checkException();
+	if (_vlcInstance) {
+		p_libvlc_audio_set_volume(_vlcInstance, volume * 100, _vlcException);
+		checkException();
+	}
 }
 
 int AudioOutput::outputDevice() const {

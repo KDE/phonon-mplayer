@@ -29,6 +29,7 @@
 #include <QtCore/QSet>
 #include <QtCore/QVariant>
 #include <QtCore/QtPlugin>
+#include <QtCore/QtConcurrentRun>
 
 Q_EXPORT_PLUGIN2(phonon_vlc, Phonon::VLC::Backend);
 
@@ -47,13 +48,15 @@ Backend::Backend(QObject * parent, const QVariantList &)
 	setProperty("backendWebsite", QLatin1String("http://multimedia.kde.org/"));
 
 	//Before everything else
-	initLibVLC();
+	//QtConcurrent runs initLibVLC() in another thread
+	//Otherwise it takes to long loading all VLC plugins
+	QFuture<void> _initLibVLCFinished = QtConcurrent::run(initLibVLC);
 
-	qDebug() << "Using VLC version:" << p_libvlc_get_version();
+	//qDebug() << "Using VLC version:" << p_libvlc_get_version();
 }
 
 Backend::~Backend() {
-	releaseLibVLC();
+	//releaseLibVLC();
 }
 
 QObject * Backend::createObject(BackendInterface::Class c, QObject * parent, const QList<QVariant> & args) {

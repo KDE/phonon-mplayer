@@ -22,6 +22,7 @@
 #include "vlc_symbols.h"
 
 #include <QtGui/QWidget>
+#include <QtCore/QtDebug>
 
 namespace Phonon
 {
@@ -34,36 +35,31 @@ VideoWidget::VideoWidget(QWidget * parent)
 	_widget = new QWidget(parent);
 
 	_vlcMediaPlayerWidgetId = (int) _widget->winId();
-	p_libvlc_video_set_parent(_vlcInstance, _vlcMediaPlayerWidgetId, _vlcException);
 }
 
 VideoWidget::~VideoWidget() {
 }
 
 Phonon::VideoWidget::AspectRatio VideoWidget::aspectRatio() const {
+	const char * aspectRatio = p_libvlc_video_get_aspect_ratio(_vlcCurrentMediaPlayer, _vlcException);
+
+	qDebug() << "VideoWidget::aspectRatio():" << aspectRatio;
+
 	return Phonon::VideoWidget::AspectRatioAuto;
 }
 
 void VideoWidget::setAspectRatio(Phonon::VideoWidget::AspectRatio aspectRatio) {
-	/*
-	MediaSettings::Aspect43
-	MediaSettings::Aspect169
-	MediaSettings::Aspect149
-	MediaSettings::Aspect1610
-	MediaSettings::Aspect54
-	MediaSettings::Aspect235
-	MediaSettings::AspectAuto
-	*/
-
 	switch(aspectRatio) {
-	case Phonon::VideoWidget::AspectRatioWidget:
-		break;
 	case Phonon::VideoWidget::AspectRatioAuto:
+		break;
+	case Phonon::VideoWidget::AspectRatioWidget:
 		break;
 	case Phonon::VideoWidget::AspectRatio4_3:
 		break;
 	case Phonon::VideoWidget::AspectRatio16_9:
 		break;
+	default:
+		qCritical() << __FUNCTION__ << "error: unsupported AspectRatio:" << aspectRatio;
 	}
 }
 
