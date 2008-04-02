@@ -78,6 +78,10 @@ signals:
 
 	void objectDescriptionChanged(ObjectDescriptionType);
 
+private slots:
+
+	void initLibVLCFinished();
+
 private:
 
 	mutable QStringList m_supportedMimeTypes;
