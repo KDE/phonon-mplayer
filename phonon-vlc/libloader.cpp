@@ -19,7 +19,6 @@
 #include "libloader.h"
 
 #include <QtCore/QLibrary>
-#include <QtCore/QtDebug>
 
 LibLoader::LibLoader(const char * libName, const char * functionToTest) {
 	_lib = NULL;
@@ -27,7 +26,8 @@ LibLoader::LibLoader(const char * libName, const char * functionToTest) {
 	_functionToTest = strdup(functionToTest);
 
 	if (!load()) {
-		qWarning() << "Cannot find:" << _libName << "on your system, error msg:" << _lib->errorString();
+		qFatal("Cannot find '%s' on your system, error msg: %s", _libName, _lib->errorString().toAscii().constData());
+		exit();
 	}
 }
 
@@ -55,13 +55,13 @@ bool LibLoader::load() {
 
 void * LibLoader::resolve(const char * name) {
 	if (!_lib->isLoaded()) {
-		qWarning() << "Library:" << _libName << "not loaded";
+		qFatal("Library '%s' not loaded", _libName);
 		return NULL;
 	}
 
 	void * func = _lib->resolve(name);
 	if (!func) {
-		qWarning() << "Cannot resolve:" << name << "in library:" << _libName;
+		qFatal("Cannot resolve '%s' in library '%s'", name, _libName);
 	}
 
 	return func;

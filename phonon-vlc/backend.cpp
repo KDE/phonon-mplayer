@@ -121,12 +121,7 @@ bool Backend::supportsOSD() const {
 }
 
 bool Backend::supportsFourcc(quint32 fourcc) const {
-	switch(fourcc) {
-	case 0x00000000:
-		return true;
-	default:
-		return false;
-	}
+	return true;
 }
 
 bool Backend::supportsSubtitles() const {
@@ -134,30 +129,80 @@ bool Backend::supportsSubtitles() const {
 }
 
 QStringList Backend::availableMimeTypes() const {
-	if (m_supportedMimeTypes.isEmpty()) {
+	if (_supportedMimeTypes.isEmpty()) {
 		//Audio mime types
-		m_supportedMimeTypes
-			<< "audio/mp3"
-			<< "audio/x-mp3"
-			<< "audio/wav"
-
-			<< "audio/mpeg"
-			<< "audio/x-ms-wma"
+		_supportedMimeTypes
+			<< "audio/x-m4a"
+			<< "audio/x-aiff"
+			<< "audio/aiff"
+			<< "audio/x-pn-aiff"
+			<< "audio/x-realaudio"
+			<< "audio/basic"
+			<< "audio/x-basic"
+			<< "audio/x-pn-au"
+			<< "audio/x-8svx"
+			<< "audio/8svx"
+			<< "audio/x-16sv"
+			<< "audio/168sv"
+			<< "audio/x-ogg"
+			<< "audio/x-speex+ogg"
 			<< "audio/vnd.rn-realaudio"
-			<< "audio/x-wav";
+			<< "audio/x-pn-realaudio-plugin"
+			<< "audio/x-real-audio"
+			<< "audio/x-wav"
+			<< "audio/wav"
+			<< "audio/x-pn-wav"
+			<< "audio/x-pn-windows-acm"
+			<< "audio/mpeg2"
+			<< "audio/x-mpeg2"
+			<< "audio/mpeg3"
+			<< "audio/x-mpeg3"
+			<< "audio/mpeg"
+			<< "audio/x-mpeg"
+			<< "audio/x-mpegurl"
+			<< "audio/x-mp3"
+			<< "audio/mp3"
+			<< "audio/mpeg"
+			<< "audio/x-ms-wma";
 
 		//Video mime types
-		m_supportedMimeTypes
-			<< "video/mpg"
-			<< "video/avi"
-
-			<< "video/mpeg"
-			<< "video/mp4"
+		_supportedMimeTypes
 			<< "video/quicktime"
-			<< "video/x-ms-wmv";
+			<< "video/x-quicktime"
+			<< "video/mkv"
+			<< "video/msvideo"
+			<< "video/x-msvideo"
+			<< "video/x-flic"
+			<< "video/x-anim"
+			<< "video/anim"
+			<< "video/mng"
+			<< "video/x-mng"
+			<< "video/mpeg"
+			<< "video/x-mpeg"
+			<< "video/x-ms-asf"
+			<< "video/x-ms-wmv"
+			<< "video/mp4"
+			<< "video/mpg"
+			<< "video/avi";
+
+		//Application mime types
+		_supportedMimeTypes
+			<< "application/x-annodex"
+			<< "application/x-quicktimeplayer"
+			<< "application/ogg"
+			<< "application/ogg"
+			<< "application/vnd.rn-realmedia"
+			<< "application/x-flash-video";
+
+		//Image mime types
+		_supportedMimeTypes
+			<< "image/x-ilbm"
+			<< "image/ilbm"
+			<< "image/png"
+			<< "image/x-png";
 	}
 
-	return m_supportedMimeTypes;
+	return _supportedMimeTypes;
 }
 
 QList<int> Backend::objectDescriptionIndexes(ObjectDescriptionType type) const {

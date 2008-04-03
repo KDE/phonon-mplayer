@@ -84,7 +84,7 @@ private slots:
 
 private:
 
-	mutable QStringList m_supportedMimeTypes;
+	mutable QStringList _supportedMimeTypes;
 };
 
 }}	//Namespace Phonon::VLC
