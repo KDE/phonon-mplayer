@@ -140,7 +140,7 @@ Phonon::State VLCMediaObject::state() const {
 		checkException();
 	}
 
-	Phonon::State state;
+	Phonon::State state = Phonon::LoadingState;
 
 	switch (st) {
 	case libvlc_NothingSpecial:

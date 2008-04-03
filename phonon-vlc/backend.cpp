@@ -32,7 +32,17 @@
 #include <QtCore/QtConcurrentRun>
 #include <QtCore/QFutureWatcher>
 
-Q_EXPORT_PLUGIN2(phonon_vlc, Phonon::VLC::Backend);
+#ifdef KDE4_FOUND
+	#include <kpluginfactory.h>
+	#include <kpluginloader.h>
+#endif	//KDE4_FOUND
+
+#ifdef KDE4_FOUND
+	K_PLUGIN_FACTORY(VLCBackendFactory, registerPlugin<Phonon::VLC::Backend>();)
+	K_EXPORT_PLUGIN(VLCBackendFactory("vlcbackend"))
+#else
+	Q_EXPORT_PLUGIN2(phonon_vlc, Phonon::VLC::Backend);
+#endif	//KDE4_FOUND
 
 namespace Phonon
 {
@@ -65,8 +75,8 @@ Backend::~Backend() {
 }
 
 void Backend::initLibVLCFinished() {
-	qDebug() << "VLC loaded";
 	qDebug() << "Using VLC version:" << p_libvlc_get_version();
+	qDebug() << "VLC loaded";
 }
 
 QObject * Backend::createObject(BackendInterface::Class c, QObject * parent, const QList<QVariant> & args) {

@@ -41,9 +41,10 @@ VideoWidget::~VideoWidget() {
 }
 
 Phonon::VideoWidget::AspectRatio VideoWidget::aspectRatio() const {
-	const char * aspectRatio = p_libvlc_video_get_aspect_ratio(_vlcCurrentMediaPlayer, _vlcException);
-
-	qDebug() << "VideoWidget::aspectRatio():" << aspectRatio;
+	if (_vlcCurrentMediaPlayer) {
+		const char * aspectRatio = p_libvlc_video_get_aspect_ratio(_vlcCurrentMediaPlayer, _vlcException);
+		qDebug() << "VideoWidget::aspectRatio():" << aspectRatio;
+	}
 
 	return Phonon::VideoWidget::AspectRatioAuto;
 }
