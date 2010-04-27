@@ -20,6 +20,19 @@ include(${QT_USE_FILE})
 include(cmake/ReduceQtIncludeDirs.cmake)
 reduce_qt_include_dirs()
 
+macro(_SET_FANCY _var _value _comment)
+   if (KDESupport_SOURCE_DIR)
+      # when building inside kdesupport other subprojects write crap into our variables
+      set(${_var} "${_value}")
+   else (KDESupport_SOURCE_DIR)
+      if (NOT DEFINED ${_var})
+         set(${_var} "${_value}")
+      else (NOT DEFINED ${_var})
+         set(${_var} "${${_var}}" CACHE PATH "${_comment}")
+      endif (NOT DEFINED ${_var})
+   endif (KDESupport_SOURCE_DIR)
+endmacro(_SET_FANCY)
+
 set(LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)" )
 
 _set_fancy(EXEC_INSTALL_PREFIX         "${CMAKE_INSTALL_PREFIX}"                   "Base directory for executables and libraries")
