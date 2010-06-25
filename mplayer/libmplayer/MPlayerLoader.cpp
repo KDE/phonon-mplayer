@@ -170,11 +170,15 @@ QStringList MPlayerLoader::readMediaSettings() {
 		if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA) {
 			//Direct3D video output driver only available after revision 28121
 			//See http://svn.mplayerhq.hu/mplayer/trunk/libvo/vo_direct3d.c
+			//r28121 Tue Dec 9 2008
 			//The Direct3D video output driver does not very well yet under Windows XP
 			//It works fine only with Windows >= Vista
 			args << "-vo";
 			args << "direct3d";
 		}
+	} else {
+		qCritical() << Q_FUNC_INFO <<
+			"Could not use Direct3D video output driver: your MPlayer version is too old";
 	}
 #endif	//Q_WS_WIN
 
@@ -225,10 +229,14 @@ QStringList MPlayerLoader::readMediaSettings() {
 	if (MPlayerProcess::getMPlayerVersion() > 27872) {
 		//Volume startup command line only available after revision 27872
 		//See http://svn.mplayerhq.hu/mplayer/trunk/mplayer.c?revision=27872&view=markup
+		//r27872 Fri Oct 31 2008
 		if (settings.volume >= 0) {
 			args << "-volume";
 			args << QString::number(settings.volume);
 		}
+	} else {
+		qCritical() << Q_FUNC_INFO <<
+			"Could not use MPlayer volume command line: your MPlayer version is too old";
 	}
 
 	//Speedup internet media by using IPv4
@@ -282,7 +290,20 @@ QStringList MPlayerLoader::readMediaSettings() {
 	//Turns off xscreensaver at startup and turns it on again on exit.
 	//If your screensaver supports neither the XSS nor XResetScreen-
 	//Saver API please use -heartbeat-cmd instead.
-	args << "-stop-xscreensaver";
+	//args << "-stop-xscreensaver";
+
+#ifndef Q_WS_WIN
+	//Prevent MPlayer from messing up our shortcuts
+	//We don't have this problem under Windows
+	args << "-input";
+	if (MPlayerProcess::getMPlayerVersion() > 29058) {
+		//r29058 Wed, 25 Mar 2009
+		args << "nodefault-bindings:conf=/dev/null";
+	} else {
+		qCritical() << Q_FUNC_INFO <<
+			"Could not disable MPlayer keyboard bindings: your MPlayer version is too old";
+	}
+#endif	//Q_WS_WIN
 
 
 	//Sets MPlayer configuration file

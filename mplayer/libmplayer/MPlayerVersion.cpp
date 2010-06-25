@@ -58,6 +58,9 @@ int MPlayerVersion::parse(const QString & line) {
 	//Windows, http://sourceforge.net/projects/mplayer-win32/ build:
 	//MPlayer Sherpya-SVN-r28311-4.2.5 (C) 2000-2009 MPlayer Team
 	//
+	//Ubuntu 9.10:
+	//MPlayer SVN-r29237-4.4.1 (C) 2000-2009 MPlayer Team
+	//
 	static QRegExp rx_mplayer_revision("^MPlayer (.*)-r(\\d+)(.*)");
 	static QRegExp rx_mplayer_version("^MPlayer ([a-z,0-9,.]+)-(.*)");
 

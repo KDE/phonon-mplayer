@@ -275,6 +275,7 @@ bool MPlayerProcess::isRunning() const {
 }
 
 int MPlayerProcess::getMPlayerVersion() {
+	//_mplayerVersion = 0 if fail to parse; -1 if not read yet
 	return _mplayerVersion;
 }
 
@@ -480,7 +481,7 @@ void MPlayerProcess::parseLine(const QString & line_) {
 		}
 
 		//Subtitle
-		//rx_subtitle("^ID_(SUBTITLE|FILE_SUB|VOBSUB)_ID=(\\d+)");
+		//rx_subtitle("^ID_(SUBTITLE|FILE_SUB|VOBSUB)_ID=(\\d+)")
 		else if (rx_subtitle.indexIn(line) > -1) {
 			//DVD line example:
 
