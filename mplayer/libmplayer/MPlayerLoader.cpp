@@ -282,7 +282,7 @@ QStringList MPlayerLoader::readMediaSettings() {
 	//Turns off xscreensaver at startup and turns it on again on exit.
 	//If your screensaver supports neither the XSS nor XResetScreen-
 	//Saver API please use -heartbeat-cmd instead.
-	//args << "-stop-xscreensaver";
+	args << "-stop-xscreensaver";
 
 
 	//Sets MPlayer configuration file

@@ -305,6 +305,13 @@ signals:
 	void subtitleChanged(int id);
 
 	/**
+	 * The subtitle could not be loaded.
+	 *
+	 * @param errorMessage reason for the subtitle not being loaded
+	 */
+	void subtitleLoadingError(const QString & subtitleFileName /*TODO , const QString & errorMessage*/);
+
+	/**
 	 * A new title has been detected from the media/file/stream.
 	 *
 	 * Title/chapter/angle DVD.
@@ -497,6 +504,7 @@ private:
 	QRegExp rx_subtitle;
 	QRegExp rx_sid;
 	QRegExp rx_subtitle_file;
+	QRegExp rx_subtitle_loading_error;
 
 	//Meta data infos
 	QRegExp rx_clip_title;

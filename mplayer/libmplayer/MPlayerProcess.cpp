@@ -103,6 +103,7 @@ MPlayerProcess::MPlayerProcess(QObject * parent)
 	rx_sid("^ID_(SID|VSID)_(\\d+)_(LANG|NAME)=(.*)"),
 	//rx_subtitle_file("^ID_FILE_SUB_FILENAME=(.*)"),
 	rx_subtitle_file("^SUB: Added subtitle file \\((\\d+)\\): (.*)"),
+	rx_subtitle_loading_error("^Cannot load subtitles: (.*)"),
 
 	//Meta data infos
 	rx_clip_title("^(name|title): (.*)", Qt::CaseInsensitive),
@@ -363,7 +364,7 @@ void MPlayerProcess::parseLine(const QString & line_) {
 
 		//Screenshot
 		else if (rx_screenshot.indexIn(line) > -1) {
-			const QString fileName = rx_screenshot.cap(1);
+			QString fileName = rx_screenshot.cap(1);
 			qDebug() << MPLAYER_LOG << __FUNCTION__ << "Screenshot:" << fileName;
 			emit screenshotSaved(fileName);
 		}
@@ -513,7 +514,7 @@ void MPlayerProcess::parseLine(const QString & line_) {
 			//ID_SID_2_LANG=eng
 
 			//int id = rx_subtitle.cap(2).toInt();
-			const QString type = rx_subtitle.cap(1);
+			QString type = rx_subtitle.cap(1);
 
 			if (type == "FILE_SUB") {
 			} else if (type == "VOBSUB") {
@@ -522,12 +523,12 @@ void MPlayerProcess::parseLine(const QString & line_) {
 		}
 
 		//Subtitle
-		//rx_sid("^ID_(SID|VSID)_(\\d+)_(LANG|NAME)=(.*)");
+		//rx_sid("^ID_(SID|VSID)_(\\d+)_(LANG|NAME)=(.*)")
 		else if (rx_sid.indexIn(line) > -1) {
-			const QString type = rx_sid.cap(1);
+			QString type = rx_sid.cap(1);
 			int id = rx_sid.cap(2).toInt();
-			const QString attr = rx_sid.cap(3);
-			const QString value = rx_sid.cap(4);
+			QString attr = rx_sid.cap(3);
+			QString value = rx_sid.cap(4);
 
 			if (type == "VSID") {
 			} else if (type == "SID") {
@@ -550,12 +551,12 @@ void MPlayerProcess::parseLine(const QString & line_) {
 		}
 
 		//Subtitle
-		//rx_subtitle_file("^SUB: Added subtitle file \\((\\d+)\\): (.*)");
+		//rx_subtitle_file("^SUB: Added subtitle file \\((\\d+)\\): (.*)")
 		else if (rx_subtitle_file.indexIn(line) > -1) {
-			//MPlayer make the id start at number 1,
+			//MPlayer makes the id start at number 1,
 			//we want it to start at number 0
 			int id = rx_subtitle_file.cap(1).toInt() - 1;
-			const QString fileName = rx_subtitle_file.cap(2);
+			QString fileName = rx_subtitle_file.cap(2);
 			qDebug() << MPLAYER_LOG << __FUNCTION__ << "Subtitle id:" << id << "file:" << fileName;
 
 			SubtitleData subtitleData = _subtitleList[id];
@@ -569,6 +570,14 @@ void MPlayerProcess::parseLine(const QString & line_) {
 				qDebug() << MPLAYER_LOG << __FUNCTION__ << "Current subtitle changed:" << id;
 				emit subtitleChanged(0);
 			}
+		}
+
+		//Subtitle
+		//rx_subtitle_loading_error("^Cannot load subtitles: (.*)")
+		else if (rx_subtitle_loading_error.indexIn(line) > -1) {
+			QString fileName = rx_subtitle_loading_error.cap(1);
+			emit subtitleLoadingError(fileName);
+			qDebug() << MPLAYER_LOG << __FUNCTION__ << "Cannot load subtitle:" << fileName;
 		}
 
 		//AO
@@ -653,7 +662,7 @@ void MPlayerProcess::parseLine(const QString & line_) {
 			emit audioChannelAdded(id, audioChannelData);
 		}
 
-		//rx_mkvchapters("\\[mkv\\] Chapter (\\d+) from (.*) to (.*), (.*)");
+		//rx_mkvchapters("\\[mkv\\] Chapter (\\d+) from (.*) to (.*), (.*)")
 		//Matroska chapters
 		else if (rx_mkvchapters.indexIn(line) != -1) {
 			//Examples:
@@ -716,7 +725,7 @@ void MPlayerProcess::parseLine(const QString & line_) {
 			//ID_DVD_CURRENT_TITLE=1
 
 			int titleId = rx_title.cap(1).toInt();
-			const QString attr = rx_title.cap(2);
+			QString attr = rx_title.cap(2);
 
 			if (attr == "CHAPTERS") {
 				int chapters = rx_title.cap(3).toInt();
@@ -885,8 +894,8 @@ void MPlayerProcess::parseLine(const QString & line_) {
 
 		//Generic things
 		if (rx_generic.indexIn(line) > -1) {
-			const QString tag = rx_generic.cap(1);
-			const QString value = rx_generic.cap(2);
+			QString tag = rx_generic.cap(1);
+			QString value = rx_generic.cap(2);
 
 			if (tag == "ID_VIDEO_ID") {
 				//First string to tell us that the media contains a video track

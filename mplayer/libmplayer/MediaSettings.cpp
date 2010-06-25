@@ -44,60 +44,6 @@ void MediaSettings::clear() {
 	videoFilters.clear();
 
 	opticalDeviceName.clear();
-
-
-//FIXME Everything after this point is not clean and not used!
-
-	gamma = 0;
-
-	aspect_ratio_id = AspectAuto;
-
-	//fullscreen = FALSE;
-
-	external_subtitles.clear();
-	external_audio.clear();
-	sub_delay = 0;
-	audio_delay = 0;
-	sub_pos = 100; // 100% by default
-	sub_scale = 5;
-
-	sub_scale_ass = 1;
-
-	speed = 1.0;
-
-	add_letterbox = false;
-
-	audioFilters.clear();
-	videoFilters.clear();
-
-	audio_use_channels = ChDefault; // (0)
-	stereo_mode = Stereo; // (0)
-
-	panscan_factor = 1.0;
-
-	// Not set yet.
-	starting_time = -1;
-
-	is264andHD = false;
-
-	forced_demuxer.clear();
-	forced_video_codec.clear();
-	forced_audio_codec.clear();
-
-	original_demuxer.clear();
-	original_video_codec.clear();
-	original_audio_codec.clear();
-
-	mplayer_additional_options.clear();
-	mplayer_additional_video_filters.clear();
-	mplayer_additional_audio_filters.clear();
-
-	win_width = 400;
-	win_height = 300;
-}
-
-double MediaSettings::win_aspect() {
-	return (double) win_width / win_height;
 }
 
 }}	//Namespace Phonon::MPlayer

@@ -33,28 +33,17 @@ namespace MPlayer
  * Settings for the MPlayer process.
  *
  * MPlayer uses command line arguments.
- * Here are all the arguments that we be given to MPlayer command line.
+ * Here are some of the arguments that will be given to MPlayer command line.
  *
- * FIXME This class is still dirty and some code needs to be removed.
- * All javadoc commented variables are clean and tested, others are not.
+ * Read by class MPlayerLoader written by classes MediaObject, Effect and AudioOutput.
+ * This class allows to pass parameters to the class MPlayerLoader (which contains a static
+ * instance of this class).
  *
  * @see MPlayerLoader
  * @author Tanguy Krotoff
  */
 class MediaSettings {
 public:
-
-//Not clean and not used
-	enum Aspect { AspectAuto = 1, Aspect43 = 2, Aspect169 = 3, Aspect235 = 4,
-		Aspect149 = 8, Aspect1610 = 9, Aspect54 = 10 };
-
-	enum AudioChannels { ChDefault = 0, ChStereo = 2, ChSurround = 4,
-		ChFull51 = 6 };
-
-	enum StereoMode { Stereo = 0, Left = 1, Right = 2 };
-
-	enum IDs { NoneSelected = -1000, SubNone = 90000 };
-//!Not clean and not used
 
 	MediaSettings();
 	~MediaSettings();
@@ -109,81 +98,6 @@ public:
 	 * <pre>mplayer cdda://1 -cdrom-device /dev/cdrom</pre>
 	 */
 	QString opticalDeviceName;
-
-
-//FIXME Everything after this point is not clean and is not used!
-
-	int gamma;
-
-	double current_sec;
-	int current_sub_id;
-
-	int current_audio_id;
-
-	int current_title_id;
-	int current_chapter_id;
-	int current_angle_id;
-
-	int aspect_ratio_id;
-
-	//bool fullscreen;
-
-	QString external_subtitles;
-	QString external_audio; // external audio file
-
-	int sub_delay;
-	int audio_delay;
-
-	// Subtitles position (0-100)
-	int sub_pos;
-	double sub_scale;
-
-	double sub_scale_ass;
-
-
-	double speed; // Speed of playback: 1.0 = normal speed
-
-	int current_deinterlacer;
-
-	bool add_letterbox;
-
-	int audio_use_channels;
-	int stereo_mode;
-
-	double panscan_factor; // mplayerwindow zoom
-
-	// This a property of the video and it should be
-	// in mediadata, but we have to save it to preserve
-	// this data among restarts.
-	double starting_time; // Some videos don't start at 0
-
-	//! The codec of the video is ffh264 and it's high definition
-	bool is264andHD;
-
-	// Advanced settings
-	QString forced_demuxer;
-	QString forced_video_codec;
-	QString forced_audio_codec;
-
-	// A copy of the original values, so we can restore them.
-	QString original_demuxer;
-	QString original_video_codec;
-	QString original_audio_codec;
-
-	// Options to mplayer (for this file only)
-	QString mplayer_additional_options;
-	QString mplayer_additional_video_filters;
-	QString mplayer_additional_audio_filters;
-
-	// Some things that were before in mediadata
-	// They can vary, because of filters, so better here
-
-	//Resolution used by mplayer
-	//Can be bigger that video resolution
-	//because of the aspect ratio or expand filter
-	int win_width;
-	int win_height;
-	double win_aspect();
 };
 
 }}	//Namespace Phonon::MPlayer
