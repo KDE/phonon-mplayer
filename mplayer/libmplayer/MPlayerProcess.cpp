@@ -300,6 +300,13 @@ void MPlayerProcess::parseLine(const QString & line_) {
 		return;
 	}
 
+	//Skip messages "No bind found for key 'ESC'." and friends
+	//This occurs because MPlayer key bindings (shortcuts) are disabled
+	//thanks to MPlayer parameter "nodefault-bindings:conf=/dev/null" (inside MPlayerLoader.cpp)
+	if (line.contains("No bind found for key")) {
+		return;
+	}
+
 	//Parse A: V: line
 	if (rx_av.indexIn(line) > -1) {
 		_mediaData.currentTime = (qint64) (rx_av.cap(1).toDouble() * SECONDS_CONVERTION);

@@ -301,7 +301,7 @@ QStringList MPlayerLoader::readMediaSettings() {
 		args << "nodefault-bindings:conf=/dev/null";
 	} else {
 		qCritical() << Q_FUNC_INFO <<
-			"Could not disable MPlayer keyboard bindings: your MPlayer version is too old";
+			"Could not disable MPlayer key bindings (shortcuts): your MPlayer version is too old";
 	}
 #endif	//Q_WS_WIN
 
