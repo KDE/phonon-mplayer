@@ -62,8 +62,16 @@ int MPlayerVersion::parse(const QString & line) {
 	//Ubuntu 9.10:
 	//MPlayer SVN-r29237-4.4.1 (C) 2000-2009 MPlayer Team
 	//
-	static QRegExp rx_mplayer_revision("^MPlayer (.*)-r(\\d+)(.*)");
-	static QRegExp rx_mplayer_version("^MPlayer ([a-z,0-9,.]+)-(.*)");
+	//Any recent build packaged after "svn export" or the likes,
+	//includes Ark Linux package (actually rev. 31961)
+	//MPlayer UNKNOWN-4.5.1 (C) 2000-2010 MPlayer Team
+	//Unfortunately there's no way to detect the precise version,
+	//but the (C) 2010 is a good enough indication that we're
+	//> 29058, supporting all features asked for in phonon-mplayer
+	//The first commit in 2010 was 30154.
+	static const QRegExp rx_mplayer_revision("^MPlayer (.*)-r(\\d+)(.*)");
+	static const QRegExp rx_mplayer_version("^MPlayer ([a-z,0-9,.]+)-(.*)");
+	static const QRegExp rx_mplayer_year("^MPlayer (.*)2000-([0-9]*) .*");
 
 	QString version(line);
 	int revision = MPlayerProcess::MPLAYER_VERSION_FAILED;
@@ -84,6 +92,13 @@ int MPlayerVersion::parse(const QString & line) {
 		} else {
 			LibMPlayerCritical() << "Unknown MPlayer version";
 		}
+	}
+
+	if (revision == MPlayerProcess::MPLAYER_VERSION_FAILED && rx_mplayer_year.indexIn(version) > -1) {
+		const int year = rx_mplayer_year.cap(2).toInt();
+		qDebug() << MPLAYER_LOG << __FUNCTION__ << "MPlayer last copyright year:" << year;
+		if(year >= 2010)
+			revision = 30154;
 	}
 
 	if (revision == MPlayerProcess::MPLAYER_VERSION_FAILED) {
