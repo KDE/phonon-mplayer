@@ -10,5 +10,21 @@ Icon=phonon-mplayer
 InitialPreference=10
 
 Name=MPlayer
+Name[cs]=MPlayer
+Name[es]=MPlayer
+Name[nl]=MPlayer
+Name[pt]=MPlayer
+Name[pt_BR]=MPlayer
+Name[sv]=Mplayer
+Name[uk]=MPlayer
+Name[x-test]=xxMPlayerxx
 
 Comment=Phonon MPlayer backend
+Comment[cs]=Podpůrná vrstva Mplayer
+Comment[es]=Motor MPlayer para Phonon
+Comment[nl]=MPlayer-backend van Phonon
+Comment[pt]=Infra-estrutura do MPlayer para o Phonon
+Comment[pt_BR]=Infraestrutura do MPlayer para o Phonon
+Comment[sv]=Phonon Mplayer-gränssnitt
+Comment[uk]=Модуль MPlayer Phonon
+Comment[x-test]=xxPhonon MPlayer backendxx
