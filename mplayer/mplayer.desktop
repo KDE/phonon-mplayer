@@ -11,7 +11,10 @@ InitialPreference=10
 
 Name=MPlayer
 Name[cs]=MPlayer
+Name[da]=MPlayer
 Name[es]=MPlayer
+Name[hu]=MPlayer
+Name[nds]=MPlayer
 Name[nl]=MPlayer
 Name[pt]=MPlayer
 Name[pt_BR]=MPlayer
@@ -21,7 +24,10 @@ Name[x-test]=xxMPlayerxx
 
 Comment=Phonon MPlayer backend
 Comment[cs]=Podpůrná vrstva Mplayer
+Comment[da]=Phonon MPlayer-motor
 Comment[es]=Motor MPlayer para Phonon
+Comment[hu]=Phonon MPlayer-modul
+Comment[nds]=MPlayer-Hülpprogramm för Phonon
 Comment[nl]=MPlayer-backend van Phonon
 Comment[pt]=Infra-estrutura do MPlayer para o Phonon
 Comment[pt_BR]=Infraestrutura do MPlayer para o Phonon
