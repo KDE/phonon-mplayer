@@ -96,7 +96,7 @@ int MPlayerVersion::parse(const QString & line) {
 
 	if (revision == MPlayerProcess::MPLAYER_VERSION_FAILED && rx_mplayer_year.indexIn(version) > -1) {
 		const int year = rx_mplayer_year.cap(2).toInt();
-		qDebug() << MPLAYER_LOG << __FUNCTION__ << "MPlayer last copyright year:" << year;
+		LibMPlayerDebug() << "MPlayer last copyright year:" << year;
 		if(year >= 2010)
 			revision = 30154;
 	}
