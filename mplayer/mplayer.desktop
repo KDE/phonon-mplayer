@@ -10,6 +10,7 @@ Icon=phonon-mplayer
 InitialPreference=10
 
 Name=MPlayer
+Name[ca]=MPlayer
 Name[cs]=MPlayer
 Name[da]=MPlayer
 Name[es]=MPlayer
@@ -23,6 +24,7 @@ Name[uk]=MPlayer
 Name[x-test]=xxMPlayerxx
 
 Comment=Phonon MPlayer backend
+Comment[ca]=Dorsal de l'MPlayer pel Phonon
 Comment[cs]=Podpůrná vrstva Mplayer
 Comment[da]=Phonon MPlayer-motor
 Comment[es]=Motor MPlayer para Phonon
