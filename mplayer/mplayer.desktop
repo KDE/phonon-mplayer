@@ -31,6 +31,7 @@ Name[sr@latin]=MPlayer
 Name[sv]=Mplayer
 Name[uk]=MPlayer
 Name[x-test]=xxMPlayerxx
+Name[zh_TW]=MPlayer
 
 Comment=Phonon MPlayer backend
 Comment[ca]=Dorsal de l'MPlayer pel Phonon
@@ -54,3 +55,4 @@ Comment[sr@latin]=MPlayer kao pozadina Phonona
 Comment[sv]=Phonon Mplayer-gränssnitt
 Comment[uk]=Модуль MPlayer Phonon
 Comment[x-test]=xxPhonon MPlayer backendxx
+Comment[zh_TW]=Phonon MPlayer 後端介面
