@@ -10,6 +10,7 @@ Icon=phonon-mplayer
 InitialPreference=10
 
 Name=MPlayer
+Name[bs]=MPlayer
 Name[ca]=MPlayer
 Name[ca@valencia]=MPlayer
 Name[cs]=MPlayer
