@@ -35,6 +35,7 @@ Name[sv]=Mplayer
 Name[ug]=MPlayer
 Name[uk]=MPlayer
 Name[x-test]=xxMPlayerxx
+Name[zh_CN]=MPlayer
 Name[zh_TW]=MPlayer
 
 Comment=Phonon MPlayer backend
@@ -62,4 +63,5 @@ Comment[sr@latin]=MPlayer kao pozadina Phonona
 Comment[sv]=Phonon Mplayer-gränssnitt
 Comment[uk]=Модуль MPlayer Phonon
 Comment[x-test]=xxPhonon MPlayer backendxx
+Comment[zh_CN]=Phonon MPlayer 后端
 Comment[zh_TW]=Phonon MPlayer 後端介面
