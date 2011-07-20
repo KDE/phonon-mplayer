@@ -10,6 +10,7 @@ Icon=phonon-mplayer
 InitialPreference=10
 
 Name=MPlayer
+Name[bg]=MPlayer
 Name[bs]=MPlayer
 Name[ca]=MPlayer
 Name[ca@valencia]=MPlayer
@@ -39,6 +40,7 @@ Name[zh_CN]=MPlayer
 Name[zh_TW]=MPlayer
 
 Comment=Phonon MPlayer backend
+Comment[bg]=Ядро MPlayer за Phonon
 Comment[bs]=MPlayer kao pozadina Phonona
 Comment[ca]=Dorsal de l'MPlayer pel Phonon
 Comment[ca@valencia]=Dorsal de l'MPlayer pel Phonon
