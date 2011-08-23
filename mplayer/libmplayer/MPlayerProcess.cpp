@@ -550,6 +550,7 @@ void MPlayerProcess::parseLine(const QString & line_) {
 				subtitleData.lang = value;
 			}
 			subtitleData.type = type;
+            subtitleData.id = id;
 			_subtitleList[id] = subtitleData;
 
 			LibMPlayerDebug() << "Subtitle id:" << id << "value:" << value << "type:" << type << "attr:" << attr;
@@ -562,20 +563,22 @@ void MPlayerProcess::parseLine(const QString & line_) {
 		else if (rx_subtitle_file.indexIn(line) > -1) {
 			//MPlayer makes the id start at number 1,
 			//we want it to start at number 0
-			int id = rx_subtitle_file.cap(1).toInt() - 1;
+			int realId = rx_subtitle_file.cap(1).toInt() - 1;
 			QString fileName = rx_subtitle_file.cap(2);
-			LibMPlayerDebug() << "Subtitle id:" << id << "file:" << fileName;
+			LibMPlayerDebug() << "Subtitle id:" << realId << "file:" << fileName;
 
+            int id = qMax(_subtitleList.size(), 0);
 			SubtitleData subtitleData = _subtitleList[id];
+            subtitleData.id = realId;
 			subtitleData.name = fileName;
 			subtitleData.type = "file";
 			_subtitleList[id] = subtitleData;
 
 			emit subtitleAdded(id, subtitleData);
 
-			if (id == 0) {
+			if (realId == 0) {
 				LibMPlayerDebug() << "Current subtitle changed:" << id;
-				emit subtitleChanged(0);
+				emit subtitleChanged(id);
 			}
 		}
 

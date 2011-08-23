@@ -62,6 +62,7 @@ public:
 	QString lang;
 	QString name;
 	QString type;
+    int id;      // real id which may conflict between internal and external subs
 };
 
 /**

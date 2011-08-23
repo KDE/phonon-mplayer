@@ -103,6 +103,7 @@ void MediaController::clearMediaController() {
 	SubtitleData subtitleData;
 	subtitleData.name = "None";
 	subtitleData.type = "SID";
+    subtitleData.id = -1;
 	subtitleAdded(-1, subtitleData);
 	subtitleChanged(-1);
 }
@@ -371,6 +372,7 @@ void MediaController::subtitleAdded(int id, const SubtitleData & subtitleData) {
 	properties.insert("name", displayString);
 	properties.insert("description", QString());
 	properties.insert("type", subtitleData.type);
+    properties.insert("realid", subtitleData.id);
 	Phonon::SubtitleDescription subtitle(id, properties);
 
 	//Check if the index already exist
@@ -425,12 +427,13 @@ void MediaController::setCurrentSubtitle(const Phonon::SubtitleDescription & sub
 		_process->sendCommand("sub_source -1");
 	} else {
 		QString type = _currentSubtitle.property("type").toString();
+		int realid = _currentSubtitle.property("realid").toInt();
 		if (type.compare("vob", Qt::CaseInsensitive) == 0) {
-			_process->sendCommand("sub_vob " + QString::number(id));
+			_process->sendCommand("sub_vob " + QString::number(realid));
 		}
 
 		else if (type.compare("sid", Qt::CaseInsensitive) == 0) {
-			_process->sendCommand("sub_demux " + QString::number(id));
+			_process->sendCommand("sub_demux " + QString::number(realid));
 		}
 
 		else if (type.compare("file", Qt::CaseInsensitive) == 0) {
@@ -439,7 +442,7 @@ void MediaController::setCurrentSubtitle(const Phonon::SubtitleDescription & sub
 			if (_availableSubtitles.contains(_currentSubtitle)) {
 				//If already in the list of subtitles
 				//then no need to load the subtitle and restart MPlayer
-				_process->sendCommand("sub_file " + QString::number(id));
+				_process->sendCommand("sub_file " + QString::number(realid));
 			} else {
 				//This is a new subtitle file
 				//We must load it and restart MPlayer
